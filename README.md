@@ -21,4 +21,4 @@ Each area includes:
 
 Run:
 
-`pwsh /tmp/workspace/blueskymel/identity-as-code/scripts/validate.ps1`
+`pwsh ./scripts/validate.ps1`

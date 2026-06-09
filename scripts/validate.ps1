@@ -2,8 +2,8 @@ param(
     [string]$RootPath = (Resolve-Path "$PSScriptRoot/..").Path
 )
 
-$jsonFiles = Get-ChildItem -Path $RootPath -Recurse -File -Filter *.json
-$invalidFiles = @()
+$jsonFiles = Get-ChildItem -Path $RootPath -Recurse -File -Include '*.template.json'
+$invalidFiles = [System.Collections.Generic.List[string]]::new()
 
 foreach ($file in $jsonFiles) {
     try {
@@ -11,7 +11,8 @@ foreach ($file in $jsonFiles) {
     }
     catch {
         Write-Host "Invalid JSON: $($file.FullName)"
-        $invalidFiles += $file.FullName
+        Write-Host "Reason: $($_.Exception.Message)"
+        [void]$invalidFiles.Add($file.FullName)
     }
 }
 

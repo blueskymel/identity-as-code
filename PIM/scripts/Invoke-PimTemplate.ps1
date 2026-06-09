@@ -1,5 +1,5 @@
 param(
-    [string]$TemplatePath = (Resolve-Path "$PSScriptRoot/../templates/pim-role-policy.template.json").Path
+    [string]$TemplatePath = (Join-Path $PSScriptRoot "../templates/pim-role-policy.template.json")
 )
 
 if (-not (Test-Path -LiteralPath $TemplatePath)) {
