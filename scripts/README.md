@@ -70,7 +70,7 @@ For placeholder values and pipeline setup, see [`../pipelines/README.md`](../pip
 
 ```powershell
 pwsh scripts/validate.ps1
-pwsh ../ConditionalAccess/scripts/Invoke-ConditionalAccessTemplate.ps1
+pwsh ConditionalAccess/scripts/Invoke-ConditionalAccessTemplate.ps1
 ```
 
 ## Common Flags
