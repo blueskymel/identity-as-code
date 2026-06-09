@@ -42,11 +42,35 @@ All scripts require:
 
 ## Authentication
 
-Scripts use `Connect-MgGraph -Identity` (managed identity). For local development:
+All deploy scripts currently authenticate with:
 
 ```powershell
-# Interactive (developer workstation)
-Connect-MgGraph -Scopes "Policy.ReadWrite.ConditionalAccess","Group.ReadWrite.All"
+Connect-MgGraph -Identity -NoWelcome
+```
+
+That means the deploy scripts are intended for pipeline jobs or other managed/federated identity execution contexts.
+They do not currently prompt for interactive sign-in.
+
+For local workstation work, use:
+
+- `pwsh scripts/validate.ps1` to validate repository JSON
+- the `Invoke-*Template.ps1` loader scripts in the top-level scaffolding folders to inspect baseline templates
+- a managed-identity-capable host if you want to execute the deploy scripts without changing them
+
+For placeholder values and pipeline setup, see [`../pipelines/README.md`](../pipelines/README.md).
+
+## Template Handling
+
+- JSON templates are static and are not tokenized during deployment
+- Deploy behavior is driven by script parameters and pipeline inputs
+- Conditional Access deployments can override state with `-StateOverride`
+- Non-prod Conditional Access deployments default to `enabledForReportingButNotEnforced` when no state override is provided
+
+## Local Validation / Template Inspection
+
+```powershell
+pwsh scripts/validate.ps1
+pwsh ConditionalAccess/scripts/Invoke-ConditionalAccessTemplate.ps1
 ```
 
 ## Common Flags
@@ -59,7 +83,7 @@ All deploy scripts support:
 | `-WhatIf` | Preview changes without applying them |
 | `-PolicyFile/-GroupFile/-AUFile/-AssignmentFile` | Deploy a single file only |
 
-## Running Locally
+## Managed-Identity Deployment Examples
 
 ```bash
 # Validate all templates

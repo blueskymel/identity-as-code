@@ -100,26 +100,34 @@ cd identity-as-code
 pwsh scripts/validate.ps1
 ```
 
-### Deploy to Dev (Report-Only / WhatIf)
+### Inspect Baseline Templates Locally
 
 ```bash
-# Connect to Entra ID interactively
-Connect-MgGraph -Scopes "Policy.ReadWrite.ConditionalAccess","Group.ReadWrite.All","RoleManagement.ReadWrite.Directory"
+# Load the baseline template scaffolding files
+pwsh ConditionalAccess/scripts/Invoke-ConditionalAccessTemplate.ps1
+pwsh AppRegistrations/scripts/Invoke-AppRegistrationTemplate.ps1
+pwsh EnterpriseApps/scripts/Invoke-EnterpriseAppTemplate.ps1
+pwsh PIM/scripts/Invoke-PimTemplate.ps1
+pwsh AccessReviews/scripts/Invoke-AccessReviewTemplate.ps1
+pwsh LifecycleWorkflows/scripts/Invoke-LifecycleWorkflowTemplate.ps1
+```
 
+### Deploy from a Managed Identity / Pipeline Context
+
+The deploy scripts in [`scripts/`](scripts/README.md) are pipeline-oriented and authenticate with `Connect-MgGraph -Identity`.
+Run them from a GitHub Actions job, Azure DevOps job, or another host that has the required managed or federated identity context.
+
+```bash
 # Validate all templates
 pwsh scripts/validate.ps1
 
-# Deploy CA policies in report-only mode (safe preview)
-pwsh scripts/deploy-ca-policies.ps1 -Environment dev -StateOverride enabledForReportingButNotEnforced
+# Deploy CA policies to dev in report-only mode
+pwsh scripts/deploy-ca-policies.ps1 -Environment dev -StateOverride enabledForReportingButNotEnforced -WhatIf
 
-# Deploy dynamic groups
-pwsh scripts/deploy-dynamic-groups.ps1 -Environment dev
-
-# Deploy Administrative Units
-pwsh scripts/deploy-administrative-units.ps1 -Environment dev
-
-# Deploy role assignments
-pwsh scripts/deploy-role-assignments.ps1 -Environment dev
+# Deploy the remaining resource types
+pwsh scripts/deploy-dynamic-groups.ps1 -Environment dev -WhatIf
+pwsh scripts/deploy-administrative-units.ps1 -Environment dev -WhatIf
+pwsh scripts/deploy-role-assignments.ps1 -Environment dev -WhatIf
 ```
 
 ---
@@ -148,9 +156,37 @@ Three workflows are provided:
 
 > Configure OIDC workload identity federation — never store client secrets in GitHub.
 
+Use [`pipelines/github-actions.secrets.example.env`](pipelines/github-actions.secrets.example.env) as a placeholder checklist for the values you still need to fill in.
+
 ### Azure DevOps
 
 An equivalent pipeline is available at [`pipelines/azure-devops.yml`](pipelines/azure-devops.yml).
+The current YAML expects:
+
+- Azure DevOps environments named `dev`, `staging`, and `prod`
+- service connections named `identity-as-code-dev`, `identity-as-code-staging`, and `identity-as-code-prod`
+- variable groups named `identity-as-code-dev`, `identity-as-code-staging`, and `identity-as-code-prod`
+
+Use [`pipelines/azure-devops.variable-group.example.env`](pipelines/azure-devops.variable-group.example.env) as a placeholder template for the variable groups.
+
+### Full Pipeline Setup Reference
+
+For end-to-end documentation of:
+
+- required GitHub secrets
+- Azure DevOps service connections and variable groups
+- workflow inputs (`environment`, `resource`, `whatif`)
+- how templates are loaded and deployed
+- which scripts are loader utilities versus deploy entrypoints
+
+see [`pipelines/README.md`](pipelines/README.md).
+
+### How Templates and Scripts Handle Variables
+
+- JSON templates in this repository are **static files**. They do not use token replacement, environment-variable substitution, or placeholder expansion during deployment.
+- Runtime behavior is controlled by **pipeline inputs** and **script parameters**, especially `-Environment`, `-WhatIf`, and the CA-specific `-StateOverride`.
+- For Conditional Access, non-production deployments default to `enabledForReportingButNotEnforced` unless you explicitly override the state.
+- The `Invoke-*Template.ps1` scripts in the top-level scaffolding folders load and echo template JSON for inspection; they are not the main deployment entrypoints used by the pipelines.
 
 ### Hybrid Delivery Model
 
