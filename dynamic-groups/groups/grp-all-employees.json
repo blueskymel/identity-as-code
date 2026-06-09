@@ -1,0 +1,17 @@
+{
+  "groupName": "grp-all-employees",
+  "description": "All internal member users (employees). Excludes guests and service accounts. Used as a base group for broad policies.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-all-employees",
+    "description": "All internal member users (employees). Dynamically maintained.",
+    "groupTypes": ["DynamicMembership"],
+    "mailEnabled": false,
+    "mailNickname": "grp-all-employees",
+    "securityEnabled": true,
+    "membershipRule": "(user.userType -eq \"Member\") and (user.accountEnabled -eq true) and (user.userPrincipalName -notContains \"#EXT#\")",
+    "membershipRuleProcessingState": "On"
+  },
+  "tags": ["baseline", "all-users"],
+  "notes": "This group is used as the base inclusion group for broad CA policies and license assignments."
+}

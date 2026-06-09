@@ -1,0 +1,28 @@
+{
+  "auName": "au-helpdesk",
+  "description": "Administrative Unit scoping Helpdesk Administrator role to Tier-1 support users only. Prevents over-privileged help desk accounts from managing executives or other admins.",
+  "version": "1.0.0",
+  "administrativeUnit": {
+    "displayName": "au-helpdesk",
+    "description": "Tier-1 Helpdesk support scope - Helpdesk Admins manage only members of this AU",
+    "visibility": "HiddenMembership",
+    "membershipType": "Dynamic",
+    "membershipRule": "(user.department -eq \"IT Support\") and (user.jobTitle -notContains \"Manager\") and (user.accountEnabled -eq true)",
+    "membershipRuleProcessingState": "On"
+  },
+  "scopedRoleAssignments": [
+    {
+      "role": "Helpdesk Administrator",
+      "roleTemplateId": "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+      "members": [
+        {
+          "ref": "grp-helpdesk-tier1",
+          "type": "group",
+          "notes": "Assign a security group rather than individual users to simplify management"
+        }
+      ]
+    }
+  ],
+  "tags": ["helpdesk", "tier1", "scoped-admin"],
+  "notes": "Using dynamic membership for the AU itself requires Entra ID P2. Use assigned membership with Entra ID P1."
+}

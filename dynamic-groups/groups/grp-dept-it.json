@@ -1,0 +1,17 @@
+{
+  "groupName": "grp-dept-it",
+  "description": "All users with department attribute set to 'Information Technology'. Used for IT-specific app access and elevated policy targeting.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-dept-it",
+    "description": "IT department users. Dynamically maintained by HR attribute sync.",
+    "groupTypes": ["DynamicMembership"],
+    "mailEnabled": false,
+    "mailNickname": "grp-dept-it",
+    "securityEnabled": true,
+    "membershipRule": "(user.department -eq \"Information Technology\") and (user.accountEnabled -eq true) and (user.userType -eq \"Member\")",
+    "membershipRuleProcessingState": "On"
+  },
+  "tags": ["department", "it"],
+  "notes": "Requires HR system to sync the 'department' attribute to Entra ID via HR-driven provisioning or AD Connect."
+}

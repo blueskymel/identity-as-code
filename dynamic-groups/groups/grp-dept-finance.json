@@ -1,0 +1,17 @@
+{
+  "groupName": "grp-dept-finance",
+  "description": "All users in the Finance department. Used for scoped access to financial applications and stricter data controls.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-dept-finance",
+    "description": "Finance department users. Dynamically maintained by HR attribute sync.",
+    "groupTypes": ["DynamicMembership"],
+    "mailEnabled": false,
+    "mailNickname": "grp-dept-finance",
+    "securityEnabled": true,
+    "membershipRule": "(user.department -eq \"Finance\") and (user.accountEnabled -eq true) and (user.userType -eq \"Member\")",
+    "membershipRuleProcessingState": "On"
+  },
+  "tags": ["department", "finance"],
+  "notes": "Finance users should be subject to stricter DLP policies and session controls."
+}

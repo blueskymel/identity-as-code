@@ -1,0 +1,31 @@
+{
+  "policyName": "CA001-Block-Legacy-Authentication",
+  "description": "Block all legacy authentication protocols. Legacy auth does not support MFA and is a primary attack vector.",
+  "version": "1.0.0",
+  "policy": {
+    "displayName": "CA001-Block-Legacy-Authentication",
+    "state": "enabled",
+    "conditions": {
+      "users": {
+        "includeUsers": ["All"],
+        "excludeUsers": [],
+        "excludeGroups": ["grp-ca-exclusion-emergency"]
+      },
+      "applications": {
+        "includeApplications": ["All"]
+      },
+      "clientAppTypes": [
+        "exchangeActiveSync",
+        "other"
+      ]
+    },
+    "grantControls": {
+      "operator": "OR",
+      "builtInControls": ["block"]
+    }
+  },
+  "rollback": {
+    "previousState": "disabled",
+    "notes": "Store previous policy state before enabling. Use rollback/scripts/rollback-ca-policies.ps1 to revert."
+  }
+}

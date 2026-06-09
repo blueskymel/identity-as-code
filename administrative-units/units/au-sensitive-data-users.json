@@ -1,0 +1,28 @@
+{
+  "auName": "au-sensitive-data-users",
+  "description": "Administrative Unit restricting who can manage users that handle sensitive or regulated data (Finance, Legal, HR, Executive).",
+  "version": "1.0.0",
+  "administrativeUnit": {
+    "displayName": "au-sensitive-data-users",
+    "description": "Users handling sensitive or regulated data — restricted management scope",
+    "visibility": "HiddenMembership",
+    "membershipType": "Dynamic",
+    "membershipRule": "(user.department -in [\"Finance\", \"Legal\", \"Human Resources\", \"Executive\"]) and (user.accountEnabled -eq true) and (user.userType -eq \"Member\")",
+    "membershipRuleProcessingState": "On"
+  },
+  "scopedRoleAssignments": [
+    {
+      "role": "User Administrator",
+      "roleTemplateId": "fe930be7-5e62-47db-91af-98c3a49a38b1",
+      "members": [
+        {
+          "ref": "grp-sensitive-data-admins",
+          "type": "group",
+          "notes": "Only authorized senior IT staff can manage these accounts — requires background check and approval"
+        }
+      ]
+    }
+  ],
+  "tags": ["sensitive", "compliance", "scoped-admin"],
+  "notes": "Protects executive and regulated-data users from being managed by general helpdesk staff. Reduces insider threat risk."
+}

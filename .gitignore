@@ -1,0 +1,18 @@
+# Rollback backup snapshots — contain tenant state, do not commit
+rollback/backups/
+
+# PowerShell module cache
+Modules/
+
+# Editors
+.vscode/
+.idea/
+*.code-workspace
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log

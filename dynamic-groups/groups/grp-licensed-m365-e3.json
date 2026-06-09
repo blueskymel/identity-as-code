@@ -1,0 +1,17 @@
+{
+  "groupName": "grp-licensed-m365-e3",
+  "description": "All users with a Microsoft 365 E3 license assigned. Used for M365-service scoped policies.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-licensed-m365-e3",
+    "description": "All users with M365 E3 license. Dynamically maintained.",
+    "groupTypes": ["DynamicMembership"],
+    "mailEnabled": false,
+    "mailNickname": "grp-licensed-m365-e3",
+    "securityEnabled": true,
+    "membershipRule": "(user.assignedPlans -any (assignedPlan.servicePlanId -eq \"57ff2da0-773e-42df-b2af-ffb7a2317929\" -and assignedPlan.capabilityStatus -eq \"Enabled\"))",
+    "membershipRuleProcessingState": "On"
+  },
+  "tags": ["licensing", "m365"],
+  "notes": "Service plan ID 57ff2da0-773e-42df-b2af-ffb7a2317929 corresponds to Microsoft 365 E3 (ENTERPRISEPACK). Update the GUID for your specific SKU."
+}

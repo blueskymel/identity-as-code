@@ -1,0 +1,17 @@
+{
+  "groupName": "grp-dept-hr",
+  "description": "All users in Human Resources. Used for scoped access to HRMS applications and sensitive people data.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-dept-hr",
+    "description": "HR department users. Dynamically maintained.",
+    "groupTypes": ["DynamicMembership"],
+    "mailEnabled": false,
+    "mailNickname": "grp-dept-hr",
+    "securityEnabled": true,
+    "membershipRule": "(user.department -eq \"Human Resources\") and (user.accountEnabled -eq true) and (user.userType -eq \"Member\")",
+    "membershipRuleProcessingState": "On"
+  },
+  "tags": ["department", "hr"],
+  "notes": "HR users handle sensitive PII and should have access to HR applications via app-specific CA policies."
+}
