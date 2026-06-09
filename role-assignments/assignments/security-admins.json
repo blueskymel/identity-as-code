@@ -1,0 +1,30 @@
+{
+  "assignmentName": "security-admins",
+  "description": "Security Administrator role assignments. Manages security policies, alerts, and MCAS/Defender settings.",
+  "version": "1.0.0",
+  "role": {
+    "displayName": "Security Administrator",
+    "templateId": "194ae4cb-b126-40b2-bd5b-6091b380977d"
+  },
+  "assignments": [],
+  "pimSettings": {
+    "requireJustification": true,
+    "requireApproval": true,
+    "approvers": ["grp-identity-team-leads", "grp-ciso-team"],
+    "maxActivationDuration": "PT4H",
+    "requireMFA": true,
+    "requireTicketInfo": true,
+    "alertOnActivation": true
+  },
+  "eligibleAssignments": [
+    {
+      "principalRef": "grp-security-team",
+      "principalType": "group",
+      "assignmentType": "eligible",
+      "eligibilityDuration": "P365D",
+      "justification": "Security team — eligible for Security Administrator activation"
+    }
+  ],
+  "tags": ["privileged", "pim", "security"],
+  "notes": "Security Admins can modify Conditional Access, Defender, and Purview settings."
+}

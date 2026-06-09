@@ -1,0 +1,29 @@
+{
+  "assignmentName": "conditional-access-admins",
+  "description": "Conditional Access Administrator role assignments. Manages CA policies without broader Security Admin permissions.",
+  "version": "1.0.0",
+  "role": {
+    "displayName": "Conditional Access Administrator",
+    "templateId": "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9"
+  },
+  "assignments": [],
+  "pimSettings": {
+    "requireJustification": true,
+    "requireApproval": false,
+    "maxActivationDuration": "PT4H",
+    "requireMFA": true,
+    "requireTicketInfo": true,
+    "alertOnActivation": true
+  },
+  "eligibleAssignments": [
+    {
+      "principalRef": "grp-identity-team",
+      "principalType": "group",
+      "assignmentType": "eligible",
+      "eligibilityDuration": "P365D",
+      "justification": "Identity team — manage Conditional Access policies"
+    }
+  ],
+  "tags": ["privileged", "pim", "ca-admin"],
+  "notes": "Prefer this role over Security Administrator for identity team members managing only CA policies."
+}

@@ -1,0 +1,28 @@
+{
+  "policyName": "CA005-Block-Risky-Sign-Ins",
+  "description": "Block sign-ins detected as high-risk by Microsoft Entra ID Protection. Requires Entra ID P2 licensing.",
+  "version": "1.0.0",
+  "policy": {
+    "displayName": "CA005-Block-Risky-Sign-Ins",
+    "state": "enabled",
+    "conditions": {
+      "users": {
+        "includeUsers": ["All"],
+        "excludeGroups": ["grp-ca-exclusion-emergency"]
+      },
+      "applications": {
+        "includeApplications": ["All"]
+      },
+      "clientAppTypes": ["all"],
+      "signInRiskLevels": ["high"]
+    },
+    "grantControls": {
+      "operator": "OR",
+      "builtInControls": ["block"]
+    }
+  },
+  "rollback": {
+    "previousState": "disabled",
+    "notes": "Requires Entra ID P2. Monitor Identity Protection logs before enabling. Use rollback/scripts/rollback-ca-policies.ps1 to revert."
+  }
+}

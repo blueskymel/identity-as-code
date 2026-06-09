@@ -1,0 +1,18 @@
+{
+  "groupName": "grp-privileged-users",
+  "description": "All users assigned any Entra ID directory role. Used as an auxiliary targeting group for admin-scoped policies.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-privileged-users",
+    "description": "Users with at least one Entra ID directory role assignment. Updated via automated role sync script.",
+    "groupTypes": [],
+    "mailEnabled": false,
+    "mailNickname": "grp-privileged-users",
+    "securityEnabled": true,
+    "membershipRule": null,
+    "membershipRuleProcessingState": "Off"
+  },
+  "managementMode": "assigned",
+  "tags": ["privileged", "pim", "admin"],
+  "notes": "Dynamic membership rules cannot query role assignments directly. This group is managed by the role-assignments/scripts/sync-privileged-group.ps1 script, which runs on a schedule via the pipeline."
+}

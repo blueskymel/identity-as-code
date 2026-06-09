@@ -1,0 +1,101 @@
+name: Rollback Identity Configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment to roll back'
+        required: true
+        type: choice
+        options: [dev, staging, prod]
+      resource:
+        description: 'Resource type to roll back'
+        required: true
+        type: choice
+        options: [all, ca-policies, dynamic-groups, administrative-units, role-assignments]
+      reason:
+        description: 'Reason for rollback (required for audit trail)'
+        required: true
+        type: string
+      whatif:
+        description: 'WhatIf (dry-run) — preview rollback without making changes'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  rollback:
+    name: Rollback → ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}   # Requires approval for staging/prod
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log rollback intent
+        run: |
+          echo "### Rollback Initiated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Resource:** ${{ inputs.resource }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason:** ${{ inputs.reason }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **WhatIf:** ${{ inputs.whatif }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Install-Module Microsoft.Graph.Authentication      -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.SignIns    -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Groups              -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.Governance -Force -Scope CurrentUser
+
+      - name: Authenticate to Entra ID (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets[format('AZURE_CLIENT_ID_{0}', upper(inputs.environment))] }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Rollback CA Policies
+        if: inputs.resource == 'all' || inputs.resource == 'ca-policies'
+        shell: pwsh
+        run: |
+          $args = @('-DisableOnly')
+          if ([System.Convert]::ToBoolean("${{ inputs.whatif }}")) { $args += '-WhatIf' }
+          & rollback/scripts/rollback-ca-policies.ps1 @args
+
+      - name: Rollback Dynamic Groups
+        if: inputs.resource == 'all' || inputs.resource == 'dynamic-groups'
+        shell: pwsh
+        run: |
+          $args = @()
+          if ([System.Convert]::ToBoolean("${{ inputs.whatif }}")) { $args += '-WhatIf' }
+          & rollback/scripts/rollback-groups.ps1 @args
+
+      - name: Rollback Role Assignments
+        if: inputs.resource == 'all' || inputs.resource == 'role-assignments'
+        shell: pwsh
+        run: |
+          $args = @()
+          if ([System.Convert]::ToBoolean("${{ inputs.whatif }}")) { $args += '-WhatIf' }
+          & rollback/scripts/rollback-role-assignments.ps1 @args
+
+      - name: Rollback Administrative Units
+        if: inputs.resource == 'all' || inputs.resource == 'administrative-units'
+        shell: pwsh
+        run: |
+          $args = @()
+          if ([System.Convert]::ToBoolean("${{ inputs.whatif }}")) { $args += '-WhatIf' }
+          & rollback/scripts/rollback-administrative-units.ps1 @args
+
+      - name: Post rollback summary
+        if: always()
+        run: |
+          echo "### Rollback Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

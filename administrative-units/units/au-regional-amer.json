@@ -1,0 +1,39 @@
+{
+  "auName": "au-regional-amer",
+  "description": "Administrative Unit for AMER (Americas) region. Allows regional IT admins to manage only users in their geography.",
+  "version": "1.0.0",
+  "administrativeUnit": {
+    "displayName": "au-regional-amer",
+    "description": "AMER region users — scoped management for regional IT admins",
+    "visibility": "HiddenMembership",
+    "membershipType": "Dynamic",
+    "membershipRule": "(user.usageLocation -in [\"US\", \"CA\", \"MX\", \"BR\", \"AR\", \"CL\", \"CO\", \"PE\"]) and (user.accountEnabled -eq true) and (user.userType -eq \"Member\")",
+    "membershipRuleProcessingState": "On"
+  },
+  "scopedRoleAssignments": [
+    {
+      "role": "User Administrator",
+      "roleTemplateId": "fe930be7-5e62-47db-91af-98c3a49a38b1",
+      "members": [
+        {
+          "ref": "grp-regional-it-amer",
+          "type": "group",
+          "notes": "AMER regional IT admins — can manage user accounts within this AU only"
+        }
+      ]
+    },
+    {
+      "role": "Helpdesk Administrator",
+      "roleTemplateId": "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+      "members": [
+        {
+          "ref": "grp-helpdesk-amer",
+          "type": "group",
+          "notes": "AMER helpdesk — password resets and account unlocks within this AU only"
+        }
+      ]
+    }
+  ],
+  "tags": ["regional", "amer", "scoped-admin"],
+  "notes": "Extend country list to include all AMER countries used by your organization."
+}

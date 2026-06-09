@@ -1,0 +1,27 @@
+{
+  "assignmentName": "user-admins",
+  "description": "User Administrator role — scoped to regional AUs. Regional IT teams manage users in their geography.",
+  "version": "1.0.0",
+  "role": {
+    "displayName": "User Administrator",
+    "templateId": "fe930be7-5e62-47db-91af-98c3a49a38b1"
+  },
+  "scopedAssignments": [
+    {
+      "scopedToAU": "au-regional-emea",
+      "principalRef": "grp-regional-it-emea",
+      "principalType": "group",
+      "assignmentType": "active",
+      "justification": "EMEA IT team managing EMEA users via AU scope"
+    },
+    {
+      "scopedToAU": "au-regional-amer",
+      "principalRef": "grp-regional-it-amer",
+      "principalType": "group",
+      "assignmentType": "active",
+      "justification": "AMER IT team managing AMER users via AU scope"
+    }
+  ],
+  "tags": ["regional", "scoped", "au"],
+  "notes": "Each regional group is scoped to its AU. No cross-regional management is possible."
+}

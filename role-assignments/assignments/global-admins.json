@@ -1,0 +1,45 @@
+{
+  "assignmentName": "global-admins",
+  "description": "Global Administrator role assignments. MUST use PIM (Privileged Identity Management) — no permanent assignments. Minimum number of Global Admins: 2–4.",
+  "version": "1.0.0",
+  "role": {
+    "displayName": "Global Administrator",
+    "templateId": "62e90394-69f5-4237-9190-012177145e10"
+  },
+  "assignments": [
+    {
+      "principalRef": "breakglass-admin-01@contoso.onmicrosoft.com",
+      "principalType": "user",
+      "assignmentType": "active",
+      "justification": "Break-glass account — permanent active required, no PIM",
+      "notes": "This is the only acceptable permanent Global Admin account"
+    },
+    {
+      "principalRef": "breakglass-admin-02@contoso.onmicrosoft.com",
+      "principalType": "user",
+      "assignmentType": "active",
+      "justification": "Break-glass account — permanent active required, no PIM",
+      "notes": "Second break-glass — store credentials in a separate vault"
+    }
+  ],
+  "pimSettings": {
+    "requireJustification": true,
+    "requireApproval": true,
+    "approvers": ["grp-identity-team-leads"],
+    "maxActivationDuration": "PT8H",
+    "requireMFA": true,
+    "requireTicketInfo": true,
+    "alertOnActivation": true
+  },
+  "eligibleAssignments": [
+    {
+      "principalRef": "grp-global-admin-eligible",
+      "principalType": "group",
+      "assignmentType": "eligible",
+      "eligibilityDuration": "P365D",
+      "justification": "Eligible Global Admin pool — activation requires approval"
+    }
+  ],
+  "tags": ["privileged", "pim", "global-admin"],
+  "notes": "Review assignments quarterly. Remove eligibility for leavers immediately."
+}

@@ -1,0 +1,41 @@
+{
+  "policyName": "CA007-Session-Controls",
+  "description": "Enforce sign-in frequency and disable persistent browser sessions for corporate users. Limits the lifetime of access tokens.",
+  "version": "1.0.0",
+  "policy": {
+    "displayName": "CA007-Session-Controls",
+    "state": "enabled",
+    "conditions": {
+      "users": {
+        "includeUsers": ["All"],
+        "excludeGroups": [
+          "grp-ca-exclusion-emergency",
+          "grp-ca-exclusion-service-accounts"
+        ]
+      },
+      "applications": {
+        "includeApplications": ["All"]
+      },
+      "clientAppTypes": ["browser"]
+    },
+    "sessionControls": {
+      "signInFrequency": {
+        "value": 1,
+        "type": "hours",
+        "isEnabled": true
+      },
+      "persistentBrowser": {
+        "mode": "never",
+        "isEnabled": true
+      },
+      "cloudAppSecurity": null,
+      "continuousAccessEvaluation": {
+        "mode": "strictEnforcement"
+      }
+    }
+  },
+  "rollback": {
+    "previousState": "disabled",
+    "notes": "Adjust sign-in frequency value to match org risk tolerance. Use rollback/scripts/rollback-ca-policies.ps1 to revert."
+  }
+}

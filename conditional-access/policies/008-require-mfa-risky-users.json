@@ -1,0 +1,28 @@
+{
+  "policyName": "CA008-Require-MFA-Risky-Users",
+  "description": "Require MFA and password change for users detected as medium or high risk by Entra ID Protection. Requires Entra ID P2.",
+  "version": "1.0.0",
+  "policy": {
+    "displayName": "CA008-Require-MFA-Risky-Users",
+    "state": "enabled",
+    "conditions": {
+      "users": {
+        "includeUsers": ["All"],
+        "excludeGroups": ["grp-ca-exclusion-emergency"]
+      },
+      "applications": {
+        "includeApplications": ["All"]
+      },
+      "clientAppTypes": ["all"],
+      "userRiskLevels": ["high", "medium"]
+    },
+    "grantControls": {
+      "operator": "AND",
+      "builtInControls": ["mfa", "passwordChange"]
+    }
+  },
+  "rollback": {
+    "previousState": "disabled",
+    "notes": "Requires Entra ID P2 and Identity Protection. Use rollback/scripts/rollback-ca-policies.ps1 to revert."
+  }
+}

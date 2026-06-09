@@ -1,0 +1,304 @@
+# identity-as-code — Azure DevOps Pipeline
+# Mirrors the GitHub Actions deploy workflow.
+# Requires: Azure DevOps Service Connection with federated identity to each Entra ID tenant.
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - conditional-access/**
+      - dynamic-groups/**
+      - administrative-units/**
+      - role-assignments/**
+      - terraform/**
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - conditional-access/**
+      - dynamic-groups/**
+      - administrative-units/**
+      - role-assignments/**
+      - terraform/**
+
+parameters:
+  - name: environment
+    displayName: Target Environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - staging
+      - prod
+  - name: resource
+    displayName: Resource Type
+    type: string
+    default: all
+    values:
+      - all
+      - ca-policies
+      - dynamic-groups
+      - administrative-units
+      - role-assignments
+  - name: whatif
+    displayName: WhatIf (dry-run)
+    type: boolean
+    default: true
+
+variables:
+  - group: identity-as-code-${{ parameters.environment }}   # Variable group per environment
+  - name: WHATIF_FLAG
+    value: ${{ iif(parameters.whatif, '-WhatIf', '') }}
+
+stages:
+  # ─── Validate ────────────────────────────────────────────────────────────────
+  - stage: Validate
+    displayName: Validate Templates
+    jobs:
+      - job: ValidateJSON
+        displayName: Validate JSON Templates
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+
+          - task: PowerShell@2
+            displayName: Check JSON Syntax
+            inputs:
+              targetType: inline
+              script: |
+                Get-ChildItem -Recurse -Filter *.json -Exclude rollback/backups | ForEach-Object {
+                  try {
+                    $null = Get-Content $_.FullName | ConvertFrom-Json
+                    Write-Host "OK: $($_.FullName)"
+                  } catch {
+                    Write-Error "FAIL: $($_.FullName) — $_"
+                    exit 1
+                  }
+                }
+
+          - task: PowerShell@2
+            displayName: Run Structural Validation
+            inputs:
+              targetType: filePath
+              filePath: scripts/validate.ps1
+              arguments: -Path $(System.DefaultWorkingDirectory)
+              pwsh: true
+
+          - task: TerraformInstaller@1
+            displayName: Install Terraform
+            inputs:
+              terraformVersion: latest
+
+          - task: PowerShell@2
+            displayName: Validate Terraform
+            inputs:
+              targetType: inline
+              pwsh: true
+              script: |
+                terraform -chdir=terraform fmt -check -recursive
+                terraform -chdir=terraform init -backend=false
+                terraform -chdir=terraform validate
+
+  # ─── Deploy to Dev ────────────────────────────────────────────────────────────
+  - stage: DeployDev
+    displayName: Deploy → Dev
+    dependsOn: Validate
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: DeployIdentityDev
+        displayName: Deploy Identity Config (Dev)
+        environment: dev
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: PowerShell@2
+                  displayName: Install Graph Modules
+                  inputs:
+                    targetType: inline
+                    pwsh: true
+                    script: |
+                      Install-Module Microsoft.Graph.Authentication      -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.SignIns    -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Groups              -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.Governance -Force -Scope CurrentUser
+
+                - task: AzureCLI@2
+                  displayName: Deploy CA Policies (Dev — report-only)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'ca-policies'))
+                  inputs:
+                    azureSubscription: identity-as-code-dev
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-ca-policies.ps1
+                    arguments: >
+                      -Environment dev
+                      -StateOverride enabledForReportingButNotEnforced
+                      $(WHATIF_FLAG)
+
+                - task: AzureCLI@2
+                  displayName: Deploy Dynamic Groups (Dev)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'dynamic-groups'))
+                  inputs:
+                    azureSubscription: identity-as-code-dev
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-dynamic-groups.ps1
+                    arguments: -Environment dev $(WHATIF_FLAG)
+
+                - task: AzureCLI@2
+                  displayName: Deploy Administrative Units (Dev)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'administrative-units'))
+                  inputs:
+                    azureSubscription: identity-as-code-dev
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-administrative-units.ps1
+                    arguments: -Environment dev $(WHATIF_FLAG)
+
+                - task: AzureCLI@2
+                  displayName: Deploy Role Assignments (Dev)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'role-assignments'))
+                  inputs:
+                    azureSubscription: identity-as-code-dev
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-role-assignments.ps1
+                    arguments: -Environment dev $(WHATIF_FLAG)
+
+  # ─── Deploy to Staging (approval gate) ───────────────────────────────────────
+  - stage: DeployStaging
+    displayName: Deploy → Staging
+    dependsOn: DeployDev
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: DeployIdentityStaging
+        displayName: Deploy Identity Config (Staging)
+        environment: staging   # Configure approval checks in Azure DevOps Environments
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: PowerShell@2
+                  displayName: Install Graph Modules
+                  inputs:
+                    targetType: inline
+                    pwsh: true
+                    script: |
+                      Install-Module Microsoft.Graph.Authentication      -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.SignIns    -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Groups              -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.Governance -Force -Scope CurrentUser
+
+                - task: AzureCLI@2
+                  displayName: Deploy CA Policies (Staging)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'ca-policies'))
+                  inputs:
+                    azureSubscription: identity-as-code-staging
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-ca-policies.ps1
+                    arguments: -Environment staging
+
+                - task: AzureCLI@2
+                  displayName: Deploy Dynamic Groups (Staging)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'dynamic-groups'))
+                  inputs:
+                    azureSubscription: identity-as-code-staging
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-dynamic-groups.ps1
+                    arguments: -Environment staging
+
+                - task: AzureCLI@2
+                  displayName: Deploy Administrative Units (Staging)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'administrative-units'))
+                  inputs:
+                    azureSubscription: identity-as-code-staging
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-administrative-units.ps1
+                    arguments: -Environment staging
+
+                - task: AzureCLI@2
+                  displayName: Deploy Role Assignments (Staging)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'role-assignments'))
+                  inputs:
+                    azureSubscription: identity-as-code-staging
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-role-assignments.ps1
+                    arguments: -Environment staging
+
+  # ─── Deploy to Production (approval gate) ────────────────────────────────────
+  - stage: DeployProd
+    displayName: Deploy → Production
+    dependsOn: DeployStaging
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: DeployIdentityProd
+        displayName: Deploy Identity Config (Production)
+        environment: prod    # Configure approval checks in Azure DevOps Environments
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: PowerShell@2
+                  displayName: Install Graph Modules
+                  inputs:
+                    targetType: inline
+                    pwsh: true
+                    script: |
+                      Install-Module Microsoft.Graph.Authentication      -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.SignIns    -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Groups              -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force -Scope CurrentUser
+                      Install-Module Microsoft.Graph.Identity.Governance -Force -Scope CurrentUser
+
+                - task: AzureCLI@2
+                  displayName: Deploy CA Policies (Prod)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'ca-policies'))
+                  inputs:
+                    azureSubscription: identity-as-code-prod
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-ca-policies.ps1
+                    arguments: -Environment prod
+
+                - task: AzureCLI@2
+                  displayName: Deploy Dynamic Groups (Prod)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'dynamic-groups'))
+                  inputs:
+                    azureSubscription: identity-as-code-prod
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-dynamic-groups.ps1
+                    arguments: -Environment prod
+
+                - task: AzureCLI@2
+                  displayName: Deploy Administrative Units (Prod)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'administrative-units'))
+                  inputs:
+                    azureSubscription: identity-as-code-prod
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-administrative-units.ps1
+                    arguments: -Environment prod
+
+                - task: AzureCLI@2
+                  displayName: Deploy Role Assignments (Prod)
+                  condition: or(eq('${{ parameters.resource }}', 'all'), eq('${{ parameters.resource }}', 'role-assignments'))
+                  inputs:
+                    azureSubscription: identity-as-code-prod
+                    scriptType: pscore
+                    scriptPath: scripts/deploy-role-assignments.ps1
+                    arguments: -Environment prod
