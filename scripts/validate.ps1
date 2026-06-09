@@ -162,6 +162,18 @@ function Validate-RoleAssignmentFile {
     Write-Log "  Role assignment valid: $($json.assignmentName)" -Level 'SUCCESS'
 }
 
+function Validate-TemplateFile {
+    param([string]$FilePath)
+    $script:checked++
+    try {
+        $null = Get-Content -Raw -Path $FilePath | ConvertFrom-Json -ErrorAction Stop
+        Write-Log "  Template valid: $(Split-Path -Leaf $FilePath)" -Level 'SUCCESS'
+    }
+    catch {
+        $script:errors.Add("[$FilePath] Invalid JSON: $($_.Exception.Message)")
+    }
+}
+
 #endregion
 
 #region --- Main ---
@@ -187,6 +199,11 @@ foreach ($f in $auFiles) { Validate-AUFile -FilePath $f.FullName }
 $assignmentFiles = Get-ChildItem -Path (Join-Path $Path 'role-assignments' 'assignments') -Filter '*.json' -ErrorAction SilentlyContinue
 Write-Log "Validating $($assignmentFiles.Count) role assignment files..."
 foreach ($f in $assignmentFiles) { Validate-RoleAssignmentFile -FilePath $f.FullName }
+
+# Validate additional template scaffolding files
+$templateFiles = Get-ChildItem -Path $Path -Recurse -Filter '*.template.json' -File -ErrorAction SilentlyContinue
+Write-Log "Validating $($templateFiles.Count) template scaffolding files..."
+foreach ($f in $templateFiles) { Validate-TemplateFile -FilePath $f.FullName }
 
 # Summary
 Write-Log "---"

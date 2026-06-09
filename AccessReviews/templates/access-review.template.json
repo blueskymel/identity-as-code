@@ -1,0 +1,19 @@
+{
+  "templateVersion": "1.0.0",
+  "resourceType": "AccessReviews",
+  "displayName": "Quarterly Review - High Privilege Groups",
+  "scope": {
+    "resourceType": "Group",
+    "resourceDisplayName": "GRP-PRIVILEGED-ACCESS"
+  },
+  "settings": {
+    "recurrence": "quarterly",
+    "durationInDays": 14,
+    "reviewers": [
+      {
+        "type": "GroupOwners"
+      }
+    ],
+    "autoApplyDecisionsEnabled": true
+  }
+}

@@ -20,6 +20,12 @@ This repository implements a full **Identity-as-Code** pattern for Microsoft Ent
 | [`terraform/`](terraform/README.md) | Terraform foundation for declarative identity and platform controls |
 | [`scripts/`](scripts/README.md) | PowerShell deployment and validation scripts |
 | [`rollback/`](rollback/README.md) | Rollback scripts and instructions |
+| [`ConditionalAccess/`](ConditionalAccess/README.md) | Baseline template + script scaffolding for Conditional Access automation |
+| [`AppRegistrations/`](AppRegistrations/README.md) | Baseline app registration template and loader script |
+| [`EnterpriseApps/`](EnterpriseApps/README.md) | Baseline enterprise app assignment template and loader script |
+| [`PIM/`](PIM/README.md) | Baseline PIM role policy template and loader script |
+| [`AccessReviews/`](AccessReviews/README.md) | Baseline access review template and loader script |
+| [`LifecycleWorkflows/`](LifecycleWorkflows/README.md) | Baseline lifecycle workflow template and loader script |
 | [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD pipelines |
 | [`pipelines/`](pipelines/) | Azure DevOps pipeline YAML |
 

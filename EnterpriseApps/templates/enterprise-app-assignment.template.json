@@ -1,0 +1,15 @@
+{
+  "templateVersion": "1.0.0",
+  "resourceType": "EnterpriseApps",
+  "servicePrincipalAppId": "11111111-2222-3333-4444-555555555555",
+  "appRoleAssignments": [
+    {
+      "principalType": "Group",
+      "principalDisplayName": "GRP-APP-USERS",
+      "appRoleId": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "sso": {
+    "mode": "saml"
+  }
+}

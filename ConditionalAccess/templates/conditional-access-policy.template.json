@@ -1,0 +1,29 @@
+{
+  "templateVersion": "1.0.0",
+  "resourceType": "ConditionalAccess",
+  "displayName": "Baseline - Block Legacy Authentication",
+  "state": "enabledForReportingButNotEnforced",
+  "conditions": {
+    "users": {
+      "includeUsers": [
+        "All"
+      ],
+      "excludeGroups": []
+    },
+    "applications": {
+      "includeApplications": [
+        "All"
+      ]
+    },
+    "clientAppTypes": [
+      "exchangeActiveSync",
+      "other"
+    ]
+  },
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": [
+      "block"
+    ]
+  }
+}
