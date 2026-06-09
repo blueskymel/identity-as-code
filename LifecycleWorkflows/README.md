@@ -1,3 +1,5 @@
 # LifecycleWorkflows
 
-Store lifecycle workflow templates, tasks, and execution settings here.
+Baseline assets:
+- `templates/lifecycle-workflow.template.json`
+- `scripts/Invoke-LifecycleWorkflowTemplate.ps1`

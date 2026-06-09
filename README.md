@@ -13,4 +13,12 @@ The following areas are now explicitly covered in this repository:
 - AccessReviews
 - LifecycleWorkflows
 
-Each area has a dedicated folder with a local README to track artifacts and implementation details.
+Each area includes:
+- `templates/` for baseline JSON templates
+- `scripts/` for local PowerShell processing helpers
+
+## Validate templates
+
+Run:
+
+`pwsh /tmp/workspace/blueskymel/identity-as-code/scripts/validate.ps1`

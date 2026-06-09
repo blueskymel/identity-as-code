@@ -1,3 +1,5 @@
 # PIM
 
-Store Privileged Identity Management role settings and assignment policies here.
+Baseline assets:
+- `templates/pim-role-policy.template.json`
+- `scripts/Invoke-PimTemplate.ps1`

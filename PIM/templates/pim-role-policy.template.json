@@ -1,0 +1,15 @@
+{
+  "templateVersion": "1.0.0",
+  "resourceType": "PIM",
+  "scopeType": "DirectoryRole",
+  "roleDefinitionDisplayName": "Global Reader",
+  "eligibilitySettings": {
+    "maximumDurationHours": 8,
+    "mfaRequired": true,
+    "justificationRequired": true,
+    "ticketingRequired": false
+  },
+  "approvalSettings": {
+    "approvalRequired": false
+  }
+}

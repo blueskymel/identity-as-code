@@ -1,3 +1,5 @@
 # AccessReviews
 
-Store access review definitions, schedules, and reviewer mappings here.
+Baseline assets:
+- `templates/access-review.template.json`
+- `scripts/Invoke-AccessReviewTemplate.ps1`

@@ -1,3 +1,5 @@
 # ConditionalAccess
 
-Store Conditional Access policy definitions and related deployment assets here.
+Baseline assets:
+- `templates/conditional-access-policy.template.json`
+- `scripts/Invoke-ConditionalAccessTemplate.ps1`

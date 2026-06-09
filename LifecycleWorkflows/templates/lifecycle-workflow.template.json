@@ -1,0 +1,21 @@
+{
+  "templateVersion": "1.0.0",
+  "resourceType": "LifecycleWorkflows",
+  "displayName": "Joiner - Day 1 Baseline",
+  "category": "joiner",
+  "isEnabled": true,
+  "executionConditions": {
+    "trigger": "onEmployeeHireDate",
+    "offsetInDays": 0
+  },
+  "tasks": [
+    {
+      "name": "EnableAccount",
+      "description": "Enable user account on start date"
+    },
+    {
+      "name": "AddToGroups",
+      "description": "Add user to baseline groups"
+    }
+  ]
+}
