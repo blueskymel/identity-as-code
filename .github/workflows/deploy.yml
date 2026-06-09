@@ -1,0 +1,215 @@
+name: Deploy Identity Configuration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'conditional-access/**'
+      - 'dynamic-groups/**'
+      - 'administrative-units/**'
+      - 'role-assignments/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options: [dev, staging, prod]
+        default: dev
+      resource:
+        description: 'Resource type to deploy (or "all")'
+        required: true
+        type: choice
+        options: [all, ca-policies, dynamic-groups, administrative-units, role-assignments]
+        default: all
+      whatif:
+        description: 'WhatIf (dry-run) mode — do not apply changes'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  id-token: write   # Required for OIDC workload identity federation
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment || 'prod' }}
+  cancel-in-progress: false  # Never cancel a deployment in progress
+
+jobs:
+  # ─── Stage 1: Validate ───────────────────────────────────────────────────────
+  validate:
+    name: Validate Templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: sudo apt-get update && sudo apt-get install -y powershell
+
+      - name: Validate JSON syntax
+        run: |
+          find . -name "*.json" -not -path "./.git/*" -not -path "./rollback/backups/*" | \
+            while read -r f; do
+              python3 -c "import json,sys; json.load(open('$f'))" || { echo "FAIL: $f"; exit 1; }
+            done
+
+      - name: Run structural validation
+        run: pwsh scripts/validate.ps1 -Path "${{ github.workspace }}"
+
+  # ─── Stage 2: Deploy to Dev ──────────────────────────────────────────────────
+  deploy-dev:
+    name: Deploy → Dev
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: dev
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.environment != 'staging' && inputs.environment != 'prod')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Install-Module Microsoft.Graph.Authentication      -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.SignIns    -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Groups              -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.Governance -Force -Scope CurrentUser
+
+      - name: Authenticate to Entra ID (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_DEV }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy CA Policies (Dev — report-only)
+        if: inputs.resource == 'all' || inputs.resource == 'ca-policies'
+        shell: pwsh
+        run: |
+          $whatif = [System.Convert]::ToBoolean("${{ inputs.whatif || 'false' }}")
+          $args = @('-Environment', 'dev', '-StateOverride', 'enabledForReportingButNotEnforced')
+          if ($whatif) { $args += '-WhatIf' }
+          & scripts/deploy-ca-policies.ps1 @args
+
+      - name: Deploy Dynamic Groups (Dev)
+        if: inputs.resource == 'all' || inputs.resource == 'dynamic-groups'
+        shell: pwsh
+        run: |
+          $whatif = [System.Convert]::ToBoolean("${{ inputs.whatif || 'false' }}")
+          $args = @('-Environment', 'dev')
+          if ($whatif) { $args += '-WhatIf' }
+          & scripts/deploy-dynamic-groups.ps1 @args
+
+      - name: Deploy Administrative Units (Dev)
+        if: inputs.resource == 'all' || inputs.resource == 'administrative-units'
+        shell: pwsh
+        run: |
+          $whatif = [System.Convert]::ToBoolean("${{ inputs.whatif || 'false' }}")
+          $args = @('-Environment', 'dev')
+          if ($whatif) { $args += '-WhatIf' }
+          & scripts/deploy-administrative-units.ps1 @args
+
+      - name: Deploy Role Assignments (Dev)
+        if: inputs.resource == 'all' || inputs.resource == 'role-assignments'
+        shell: pwsh
+        run: |
+          $whatif = [System.Convert]::ToBoolean("${{ inputs.whatif || 'false' }}")
+          $args = @('-Environment', 'dev')
+          if ($whatif) { $args += '-WhatIf' }
+          & scripts/deploy-role-assignments.ps1 @args
+
+  # ─── Stage 3: Deploy to Staging (manual approval) ────────────────────────────
+  deploy-staging:
+    name: Deploy → Staging
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: staging   # Requires manual approval in GitHub Environments settings
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.environment == 'staging' || inputs.environment == 'prod'))
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Install-Module Microsoft.Graph.Authentication      -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.SignIns    -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Groups              -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.Governance -Force -Scope CurrentUser
+
+      - name: Authenticate to Entra ID (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_STAGING }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy CA Policies (Staging)
+        if: inputs.resource == 'all' || inputs.resource == 'ca-policies'
+        shell: pwsh
+        run: scripts/deploy-ca-policies.ps1 -Environment staging
+
+      - name: Deploy Dynamic Groups (Staging)
+        if: inputs.resource == 'all' || inputs.resource == 'dynamic-groups'
+        shell: pwsh
+        run: scripts/deploy-dynamic-groups.ps1 -Environment staging
+
+      - name: Deploy Administrative Units (Staging)
+        if: inputs.resource == 'all' || inputs.resource == 'administrative-units'
+        shell: pwsh
+        run: scripts/deploy-administrative-units.ps1 -Environment staging
+
+      - name: Deploy Role Assignments (Staging)
+        if: inputs.resource == 'all' || inputs.resource == 'role-assignments'
+        shell: pwsh
+        run: scripts/deploy-role-assignments.ps1 -Environment staging
+
+  # ─── Stage 4: Deploy to Production (manual approval required) ────────────────
+  deploy-prod:
+    name: Deploy → Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: prod      # Requires manual approval in GitHub Environments settings
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'prod')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Install-Module Microsoft.Graph.Authentication      -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.SignIns    -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Groups              -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force -Scope CurrentUser
+          Install-Module Microsoft.Graph.Identity.Governance -Force -Scope CurrentUser
+
+      - name: Authenticate to Entra ID (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_PROD }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy CA Policies (Prod)
+        if: inputs.resource == 'all' || inputs.resource == 'ca-policies'
+        shell: pwsh
+        run: scripts/deploy-ca-policies.ps1 -Environment prod
+
+      - name: Deploy Dynamic Groups (Prod)
+        if: inputs.resource == 'all' || inputs.resource == 'dynamic-groups'
+        shell: pwsh
+        run: scripts/deploy-dynamic-groups.ps1 -Environment prod
+
+      - name: Deploy Administrative Units (Prod)
+        if: inputs.resource == 'all' || inputs.resource == 'administrative-units'
+        shell: pwsh
+        run: scripts/deploy-administrative-units.ps1 -Environment prod
+
+      - name: Deploy Role Assignments (Prod)
+        if: inputs.resource == 'all' || inputs.resource == 'role-assignments'
+        shell: pwsh
+        run: scripts/deploy-role-assignments.ps1 -Environment prod

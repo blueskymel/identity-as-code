@@ -1,0 +1,29 @@
+{
+  "policyName": "CA006-Require-MFA-Azure-Management",
+  "description": "Require MFA for all access to Azure portal, Azure CLI, and Azure PowerShell. Protects Azure Resource Manager actions.",
+  "version": "1.0.0",
+  "policy": {
+    "displayName": "CA006-Require-MFA-Azure-Management",
+    "state": "enabled",
+    "conditions": {
+      "users": {
+        "includeUsers": ["All"],
+        "excludeGroups": ["grp-ca-exclusion-emergency"]
+      },
+      "applications": {
+        "includeApplications": [
+          "797f4846-ba00-4fd7-ba43-dac1f8f63013"
+        ]
+      },
+      "clientAppTypes": ["all"]
+    },
+    "grantControls": {
+      "operator": "OR",
+      "builtInControls": ["mfa"]
+    }
+  },
+  "rollback": {
+    "previousState": "disabled",
+    "notes": "Application ID 797f4846-ba00-4fd7-ba43-dac1f8f63013 is the well-known Azure Service Management API app. Use rollback/scripts/rollback-ca-policies.ps1 to revert."
+  }
+}

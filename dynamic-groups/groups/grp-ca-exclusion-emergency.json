@@ -1,0 +1,18 @@
+{
+  "groupName": "grp-ca-exclusion-emergency",
+  "description": "Break-glass emergency access accounts. EXCLUDED from all Conditional Access policies to prevent tenant lockout.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-ca-exclusion-emergency",
+    "description": "Break-glass accounts excluded from CA policies. Membership is static and requires approval.",
+    "groupTypes": [],
+    "mailEnabled": false,
+    "mailNickname": "grp-ca-exclusion-emergency",
+    "securityEnabled": true,
+    "membershipRule": null,
+    "membershipRuleProcessingState": "Off"
+  },
+  "managementMode": "assigned",
+  "tags": ["exclusion", "break-glass", "emergency"],
+  "notes": "CRITICAL: Members of this group bypass ALL Conditional Access. Membership must be audited monthly. Accounts must be cloud-only, use strong passwords (60+ char), and have their sign-in activity alerted on. Never add regular user accounts."
+}

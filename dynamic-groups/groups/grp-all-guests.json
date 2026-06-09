@@ -1,0 +1,17 @@
+{
+  "groupName": "grp-all-guests",
+  "description": "All B2B guest users in the tenant. Used to apply guest-specific Conditional Access and access policies.",
+  "version": "1.0.0",
+  "group": {
+    "displayName": "grp-all-guests",
+    "description": "All B2B guest users. Dynamically maintained.",
+    "groupTypes": ["DynamicMembership"],
+    "mailEnabled": false,
+    "mailNickname": "grp-all-guests",
+    "securityEnabled": true,
+    "membershipRule": "(user.userType -eq \"Guest\") and (user.accountEnabled -eq true)",
+    "membershipRuleProcessingState": "On"
+  },
+  "tags": ["guests", "b2b"],
+  "notes": "Apply stricter CA policies and limited app access to members of this group."
+}

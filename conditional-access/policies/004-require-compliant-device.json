@@ -1,0 +1,35 @@
+{
+  "policyName": "CA004-Require-Compliant-Device",
+  "description": "Require Intune-compliant or hybrid Azure AD-joined device for access to corporate applications. Enforces device health as a factor.",
+  "version": "1.0.0",
+  "policy": {
+    "displayName": "CA004-Require-Compliant-Device",
+    "state": "enabledForReportingButNotEnforced",
+    "conditions": {
+      "users": {
+        "includeUsers": ["All"],
+        "excludeGroups": [
+          "grp-ca-exclusion-emergency",
+          "grp-ca-exclusion-service-accounts",
+          "grp-ca-exclusion-byod"
+        ]
+      },
+      "applications": {
+        "includeApplications": ["All"],
+        "excludeApplications": []
+      },
+      "platforms": {
+        "includePlatforms": ["windows", "macOS", "linux"]
+      },
+      "clientAppTypes": ["all"]
+    },
+    "grantControls": {
+      "operator": "OR",
+      "builtInControls": ["compliantDevice", "domainJoinedDevice"]
+    }
+  },
+  "rollback": {
+    "previousState": "disabled",
+    "notes": "Start in report-only mode. Validate device compliance before enforcing. Use rollback/scripts/rollback-ca-policies.ps1 to revert."
+  }
+}

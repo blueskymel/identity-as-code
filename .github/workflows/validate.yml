@@ -1,0 +1,65 @@
+name: Validate Identity Templates
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'conditional-access/**'
+      - 'dynamic-groups/**'
+      - 'administrative-units/**'
+      - 'role-assignments/**'
+      - 'scripts/**'
+  push:
+    branches: [main]
+    paths:
+      - 'conditional-access/**'
+      - 'dynamic-groups/**'
+      - 'administrative-units/**'
+      - 'role-assignments/**'
+      - 'scripts/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: Validate JSON Templates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: Validate JSON syntax (all files)
+        run: |
+          echo "Checking JSON syntax..."
+          find . -name "*.json" \
+            -not -path "./.git/*" \
+            -not -path "./rollback/backups/*" | while read -r f; do
+            python3 -c "import json,sys; json.load(open('$f'))" \
+              && echo "OK: $f" \
+              || { echo "FAIL: $f"; exit 1; }
+          done
+
+      - name: Run PowerShell validation script
+        run: |
+          pwsh scripts/validate.ps1 -Path "${{ github.workspace }}"
+
+      - name: Post validation summary to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Identity template validation passed.** All JSON files are well-formed and meet structural requirements.'
+            })

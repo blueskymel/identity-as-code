@@ -1,0 +1,22 @@
+{
+  "assignmentName": "helpdesk-admins",
+  "description": "Helpdesk Administrator role — scoped to au-helpdesk Administrative Unit only. Tier-1 support password resets.",
+  "version": "1.0.0",
+  "role": {
+    "displayName": "Helpdesk Administrator",
+    "templateId": "729827e3-9c14-49f7-bb1b-9608f156bbb8"
+  },
+  "scopedToAU": "au-helpdesk",
+  "assignments": [
+    {
+      "principalRef": "grp-helpdesk-tier1",
+      "principalType": "group",
+      "assignmentType": "active",
+      "justification": "Tier-1 helpdesk permanent assignment scoped to au-helpdesk only",
+      "notes": "Permanent active is acceptable at this privilege level when scoped to an AU"
+    }
+  ],
+  "pimSettings": null,
+  "tags": ["helpdesk", "scoped", "au"],
+  "notes": "Scoped role assignment — these users cannot manage any user outside the au-helpdesk AU."
+}

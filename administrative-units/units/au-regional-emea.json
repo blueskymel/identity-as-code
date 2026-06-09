@@ -1,0 +1,39 @@
+{
+  "auName": "au-regional-emea",
+  "description": "Administrative Unit for EMEA (Europe, Middle East, Africa) region. Allows regional IT admins to manage only users in their geography.",
+  "version": "1.0.0",
+  "administrativeUnit": {
+    "displayName": "au-regional-emea",
+    "description": "EMEA region users — scoped management for regional IT admins",
+    "visibility": "HiddenMembership",
+    "membershipType": "Dynamic",
+    "membershipRule": "(user.usageLocation -in [\"GB\", \"DE\", \"FR\", \"NL\", \"BE\", \"SE\", \"NO\", \"DK\", \"FI\", \"CH\", \"AT\", \"IE\", \"AE\", \"SA\", \"ZA\", \"EG\"]) and (user.accountEnabled -eq true) and (user.userType -eq \"Member\")",
+    "membershipRuleProcessingState": "On"
+  },
+  "scopedRoleAssignments": [
+    {
+      "role": "User Administrator",
+      "roleTemplateId": "fe930be7-5e62-47db-91af-98c3a49a38b1",
+      "members": [
+        {
+          "ref": "grp-regional-it-emea",
+          "type": "group",
+          "notes": "EMEA regional IT admins — can manage user accounts within this AU only"
+        }
+      ]
+    },
+    {
+      "role": "Helpdesk Administrator",
+      "roleTemplateId": "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+      "members": [
+        {
+          "ref": "grp-helpdesk-emea",
+          "type": "group",
+          "notes": "EMEA helpdesk — password resets and account unlocks within this AU only"
+        }
+      ]
+    }
+  ],
+  "tags": ["regional", "emea", "scoped-admin"],
+  "notes": "Add or remove country codes as the organization grows. Pair with location-based CA policy for additional controls."
+}

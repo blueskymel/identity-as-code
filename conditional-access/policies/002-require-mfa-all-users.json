@@ -1,0 +1,31 @@
+{
+  "policyName": "CA002-Require-MFA-All-Users",
+  "description": "Require multi-factor authentication for all users accessing all cloud apps. Excludes emergency access accounts and service accounts.",
+  "version": "1.0.0",
+  "policy": {
+    "displayName": "CA002-Require-MFA-All-Users",
+    "state": "enabled",
+    "conditions": {
+      "users": {
+        "includeUsers": ["All"],
+        "excludeUsers": [],
+        "excludeGroups": [
+          "grp-ca-exclusion-emergency",
+          "grp-ca-exclusion-service-accounts"
+        ]
+      },
+      "applications": {
+        "includeApplications": ["All"]
+      },
+      "clientAppTypes": ["all"]
+    },
+    "grantControls": {
+      "operator": "OR",
+      "builtInControls": ["mfa"]
+    }
+  },
+  "rollback": {
+    "previousState": "disabled",
+    "notes": "Disable rather than delete. Use rollback/scripts/rollback-ca-policies.ps1 to revert."
+  }
+}
