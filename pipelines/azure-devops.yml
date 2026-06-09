@@ -12,6 +12,7 @@ trigger:
       - dynamic-groups/**
       - administrative-units/**
       - role-assignments/**
+      - terraform/**
 
 pr:
   branches:
@@ -23,6 +24,7 @@ pr:
       - dynamic-groups/**
       - administrative-units/**
       - role-assignments/**
+      - terraform/**
 
 parameters:
   - name: environment
@@ -87,6 +89,21 @@ stages:
               filePath: scripts/validate.ps1
               arguments: -Path $(System.DefaultWorkingDirectory)
               pwsh: true
+
+          - task: TerraformInstaller@1
+            displayName: Install Terraform
+            inputs:
+              terraformVersion: latest
+
+          - task: PowerShell@2
+            displayName: Validate Terraform
+            inputs:
+              targetType: inline
+              pwsh: true
+              script: |
+                terraform -chdir=terraform fmt -check -recursive
+                terraform -chdir=terraform init -backend=false
+                terraform -chdir=terraform validate
 
   # ─── Deploy to Dev ────────────────────────────────────────────────────────────
   - stage: DeployDev

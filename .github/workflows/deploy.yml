@@ -8,6 +8,7 @@ on:
       - 'dynamic-groups/**'
       - 'administrative-units/**'
       - 'role-assignments/**'
+      - 'terraform/**'
   workflow_dispatch:
     inputs:
       environment:

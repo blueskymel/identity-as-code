@@ -17,6 +17,7 @@ This repository implements a full **Identity-as-Code** pattern for Microsoft Ent
 | [`dynamic-groups/`](dynamic-groups/README.md) | Dynamic and assigned group definitions |
 | [`administrative-units/`](administrative-units/README.md) | Administrative Unit definitions for scoped delegation |
 | [`role-assignments/`](role-assignments/README.md) | Directory role assignments including PIM eligible assignments |
+| [`terraform/`](terraform/README.md) | Terraform foundation for declarative identity and platform controls |
 | [`scripts/`](scripts/README.md) | PowerShell deployment and validation scripts |
 | [`rollback/`](rollback/README.md) | Rollback scripts and instructions |
 | [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD pipelines |
@@ -144,6 +145,14 @@ Three workflows are provided:
 ### Azure DevOps
 
 An equivalent pipeline is available at [`pipelines/azure-devops.yml`](pipelines/azure-devops.yml).
+
+### Hybrid Delivery Model
+
+This repository is evolving toward a hybrid model:
+
+- **Terraform** for declarative identity/platform controls where provider support is strong.
+- **Graph PowerShell** for operational identity workflows (for example PIM operations and emergency tasks).
+- **Pipelines** enforce JSON + Terraform validation before deployment.
 
 ---
 

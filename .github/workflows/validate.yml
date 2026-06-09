@@ -8,6 +8,7 @@ on:
       - 'dynamic-groups/**'
       - 'administrative-units/**'
       - 'role-assignments/**'
+      - 'terraform/**'
       - 'scripts/**'
   push:
     branches: [main]
@@ -16,6 +17,7 @@ on:
       - 'dynamic-groups/**'
       - 'administrative-units/**'
       - 'role-assignments/**'
+      - 'terraform/**'
       - 'scripts/**'
   workflow_dispatch:
 
@@ -51,6 +53,17 @@ jobs:
       - name: Run PowerShell validation script
         run: |
           pwsh scripts/validate.ps1 -Path "${{ github.workspace }}"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Validate Terraform formatting
+        run: terraform -chdir=terraform fmt -check -recursive
+
+      - name: Validate Terraform configuration
+        run: |
+          terraform -chdir=terraform init -backend=false
+          terraform -chdir=terraform validate
 
       - name: Post validation summary to PR
         if: github.event_name == 'pull_request'
