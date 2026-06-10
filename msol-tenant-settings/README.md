@@ -23,7 +23,7 @@ and the related commands commonly used together during domain/federation lifecyc
 |---------|---------|
 | `Connect-MsolService` | Authenticate to the tenant before running MSOL cmdlets |
 | `Get-MsolCompanyInformation` | Read current tenant/company information |
-| `Set-MsolCompanySettings` | Configure company-level settings (for example self-service sign-up and notification controls) |
+| `Set-MsolCompanySettings` | Configure company-level settings (for example, self-service sign-up and notification controls) |
 
 ### Custom domain lifecycle
 
@@ -33,7 +33,7 @@ and the related commands commonly used together during domain/federation lifecyc
 | `New-MsolDomain` | Add a new custom domain |
 | `Get-MsolDomainVerificationDns` | Get DNS verification record requirements |
 | `Confirm-MsolDomain` | Verify/prove domain ownership |
-| `Set-MsolDomain` | Update domain properties (for example default/authentication behavior) |
+| `Set-MsolDomain` | Update domain properties (for example, default/authentication behavior) |
 | `Remove-MsolDomain` | Remove a domain when it is no longer in use |
 
 ### Federation lifecycle

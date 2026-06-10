@@ -17,4 +17,4 @@ Confirm-MsolDomain -DomainName "contoso.com"
 
 # Review and update domain behavior
 Get-MsolDomain -DomainName "contoso.com"
-Set-MsolDomain -Name "contoso.com"
+Set-MsolDomain -Name "contoso.com" -IsDefault
