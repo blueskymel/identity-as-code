@@ -26,6 +26,7 @@ This repository implements a full **Identity-as-Code** pattern for Microsoft Ent
 | [`PIM/`](PIM/README.md) | Baseline PIM role policy template and loader script |
 | [`AccessReviews/`](AccessReviews/README.md) | Baseline access review template and loader script |
 | [`LifecycleWorkflows/`](LifecycleWorkflows/README.md) | Baseline lifecycle workflow template and loader script |
+| [`msol-tenant-settings/`](msol-tenant-settings/README.md) | Legacy MSOnline tenant/domain/federation settings command examples |
 | [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD pipelines |
 | [`pipelines/`](pipelines/) | Azure DevOps pipeline YAML |
 
