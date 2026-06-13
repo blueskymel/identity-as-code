@@ -1,0 +1,26 @@
+{
+  "projectName": "contoso-fabrikam-transition",
+  "scenario": "consolidation",
+  "reviewTenantStructure": {
+    "exportPath": "./tenant-transitions/output"
+  },
+  "exportGroupMemberships": {
+    "exportPath": "./tenant-transitions/output/source-group-memberships.csv"
+  },
+  "mapIdentities": {
+    "sourceUsersCsv": "./tenant-transitions/output/source-users.csv",
+    "targetUsersCsv": "./tenant-transitions/output/target-users.csv",
+    "outputCsv": "./tenant-transitions/output/identity-mapping.csv"
+  },
+  "migrateIdentities": {
+    "mappingCsv": "./tenant-transitions/output/identity-mapping.csv",
+    "groupMembershipCsv": "./tenant-transitions/output/source-group-memberships.csv",
+    "createMissingUsers": false
+  },
+  "testSsoApplications": {
+    "ssoPlanFile": "./tenant-transitions/templates/sso-test-plan.template.json"
+  },
+  "runSeparationProject": {
+    "separationPlanFile": "./tenant-transitions/templates/separation-plan.template.json"
+  }
+}

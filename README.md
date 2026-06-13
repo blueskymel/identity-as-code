@@ -26,6 +26,7 @@ This repository implements a full **Identity-as-Code** pattern for Microsoft Ent
 | [`PIM/`](PIM/README.md) | Baseline PIM role policy template and loader script |
 | [`AccessReviews/`](AccessReviews/README.md) | Baseline access review template and loader script |
 | [`LifecycleWorkflows/`](LifecycleWorkflows/README.md) | Baseline lifecycle workflow template and loader script |
+| [`tenant-transitions/`](tenant-transitions/README.md) | Identity consolidation/separation templates and transition workflow guidance |
 | [`msol-tenant-settings/`](msol-tenant-settings/README.md) | Legacy MSOnline tenant/domain/federation settings command examples |
 | [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD pipelines |
 | [`pipelines/`](pipelines/) | Azure DevOps pipeline YAML |
@@ -111,6 +112,7 @@ pwsh EnterpriseApps/scripts/Invoke-EnterpriseAppTemplate.ps1
 pwsh PIM/scripts/Invoke-PimTemplate.ps1
 pwsh AccessReviews/scripts/Invoke-AccessReviewTemplate.ps1
 pwsh LifecycleWorkflows/scripts/Invoke-LifecycleWorkflowTemplate.ps1
+pwsh tenant-transitions/scripts/Invoke-TenantTransitionTemplate.ps1
 ```
 
 ### Deploy from a Managed Identity / Pipeline Context
@@ -190,15 +192,71 @@ see [`pipelines/README.md`](pipelines/README.md).
 - The `Invoke-*Template.ps1` scripts in the top-level scaffolding folders load and echo template JSON for inspection; they are not the main deployment entrypoints used by the pipelines.
 
 ### Hybrid Delivery Model
-
+ 
 This repository is evolving toward a hybrid model:
-
+ 
 - **Terraform** for declarative identity/platform controls where provider support is strong.
 - **Graph PowerShell** for operational identity workflows (for example PIM operations and emergency tasks).
 - **Pipelines** enforce JSON + Terraform validation before deployment.
-
+ 
 ---
-
+ 
+## Identity Consolidation and Separation Projects
+ 
+This repository also fits **tenant-to-tenant transition work** during mergers, acquisitions, and divestitures.
+ 
+### Identity consolidation
+ 
+When companies merge, start by inventorying the current tenant and mapping what must move without breaking access:
+ 
+1. **Review current tenant structure** to inventory users, groups, and applications.
+  ```powershell
+  Get-MgUser -All | Export-Csv .\users.csv -NoTypeInformation
+  Get-MgGroup -All | Export-Csv .\groups.csv -NoTypeInformation
+  Get-MgApplication -All | Export-Csv .\applications.csv -NoTypeInformation
+  ```
+2. **Export group memberships** so you know who currently has access.
+  ```powershell
+  Get-MgGroup -All | ForEach-Object {
+    $group = $_
+    Get-MgGroupMember -GroupId $group.Id -All |
+      Select-Object @{Name='GroupId';Expression={$group.Id}},
+                    @{Name='GroupDisplayName';Expression={$group.DisplayName}},
+                    Id
+  } | Export-Csv .\group-memberships.csv -NoTypeInformation
+  ```
+3. **Map identities** where the same person may exist in both tenants. Preserve mailbox access, Teams access, SharePoint access, app permissions, and group memberships.
+4. **Migrate identities safely** by creating the user in the target tenant and reapplying equivalent access with Terraform or Graph API.
+  ```hcl
+  data "azuread_group" "target_group" {
+    display_name = "grp-example"
+  }
+   
+  data "azuread_user" "target_user" {
+    user_principal_name = "user@contoso.com"
+  }
+   
+  resource "azuread_group_member" {
+   group_id         = data.azuread_group.target_group.id
+   member_object_id = data.azuread_user.target_user.id
+  }
+  ```
+5. **Test SSO applications** end to end, including login flows plus SAML, OAuth, and OpenID Connect integrations.
+ 
+### Separation project
+ 
+When a business unit is sold or carved out, the goal is to move identities **out of the current tenant** without leaving residual access behind.
+ 
+1. **Remove access** from the source tenant.
+2. **Create the new tenant landing zone** for the divested business unit.
+3. **Migrate applications** and enterprise app assignments.
+4. **Migrate permissions** and group memberships.
+5. **Validate security boundaries** so no access leaks remain.
+ 
+These projects usually combine the repository's declarative controls with Graph-driven discovery and validation so access can be re-created consistently and reviewed before cutover.
+ 
+---
+ 
 ## Emergency Procedures
 
 ### Break-Glass Accounts
