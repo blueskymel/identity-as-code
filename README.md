@@ -231,11 +231,11 @@ When companies merge, start by inventorying the current tenant and mapping what 
  
 When a business unit is sold or carved out, the goal is to move identities **out of the current tenant** without leaving residual access behind.
  
-- remove access from the source tenant
-- create the new tenant landing zone
-- migrate applications and enterprise app assignments
-- migrate permissions and group memberships
-- validate that security boundaries are clean and no access leaks remain
+1. **Remove access** from the source tenant.
+2. **Create the new tenant landing zone** for the divested business unit.
+3. **Migrate applications** and enterprise app assignments.
+4. **Migrate permissions** and group memberships.
+5. **Validate security boundaries** so no access leaks remain.
  
 These projects usually combine the repository's declarative controls with Graph-driven discovery and validation so access can be re-created consistently and reviewed before cutover.
  
