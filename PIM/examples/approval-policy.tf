@@ -55,11 +55,17 @@ resource "terraform_data" "approval_policy" {
   provisioner "local-exec" {
     interpreter = ["pwsh", "-Command"]
     command     = <<-PWSH
+      $ErrorActionPreference = "Stop"
+
       $policyId = az rest `
         --method GET `
         --url "https://graph.microsoft.com/v1.0/policies/roleManagementPolicies?`$filter=scopeId eq '/' and scopeType eq 'DirectoryRole'" `
         --query "value[?contains(id, '${var.approval_policy_role_template_id}')].id | [0]" `
         --output tsv
+
+      if ($LASTEXITCODE -ne 0) {
+        throw "Failed to query the directory role management policy for template ID ${var.approval_policy_role_template_id}."
+      }
 
       if (-not $policyId) {
         throw "No directory role management policy found for template ID ${var.approval_policy_role_template_id}."
@@ -74,6 +80,10 @@ ${local.approval_policy_rule_payload}
         --url "https://graph.microsoft.com/v1.0/policies/roleManagementPolicies/$policyId" `
         --headers "Content-Type=application/json" `
         --body $payload
+
+      if ($LASTEXITCODE -ne 0) {
+        throw "Failed to update the approval policy on directory role management policy $policyId."
+      }
     PWSH
   }
 }
