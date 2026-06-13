@@ -155,6 +155,18 @@ function Get-NormalizedValue {
     return $Value.Trim().ToLowerInvariant()
 }
 
+function Convert-SecureStringToPlainText {
+    param([Security.SecureString]$SecureValue)
+    if (-not $SecureValue) { return $null }
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureValue)
+    try {
+        return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+    }
+    finally {
+        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    }
+}
+
 function Invoke-ReviewTenantStructure {
     param([string]$Path)
     Ensure-OutputPath -Path $Path
@@ -304,18 +316,6 @@ function New-SecurePassword {
 
     for ($i = 4; $i -lt $Length; $i++) {
         $chars.Add($all[$bytes[$i] % $all.Length])
-    }
-
-    function Convert-SecureStringToPlainText {
-        param([Security.SecureString]$SecureValue)
-        if (-not $SecureValue) { return $null }
-        $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureValue)
-        try {
-            return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
-        }
-        finally {
-            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
-        }
     }
 
     for ($i = $chars.Count - 1; $i -gt 0; $i--) {
