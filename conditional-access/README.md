@@ -71,6 +71,18 @@ pwsh scripts/deploy-ca-policies.ps1 -Environment prod -PolicyFile conditional-ac
 pwsh rollback/scripts/rollback-ca-policies.ps1 -PolicyName CA001-Block-Legacy-Authentication
 ```
 
+## Terraform Automation Examples
+
+- `examples/require-mfa-external.tf`
+- `examples/block-legacy-auth.tf`
+- `examples/break-glass-exclusion.tf`
+- `examples/admin-risk-policy.tf`
+
+Notes:
+- The examples are intended to be copied into a Terraform module that already has provider configuration and Microsoft Graph authentication in place.
+- `break-glass-exclusion.tf` centralizes the standard emergency access exclusion so policy examples can reuse the same group ID list.
+- `admin-risk-policy.tf` demonstrates a P2-only high-risk admin control by combining the repository's privileged role scope with sign-in risk conditions.
+
 ## References
 
 - [Microsoft Conditional Access documentation](https://learn.microsoft.com/en-us/entra/identity/conditional-access/)
