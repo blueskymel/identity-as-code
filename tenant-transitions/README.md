@@ -8,7 +8,7 @@ Implementation assets for **identity consolidation** and **separation (divestitu
 - `templates/sso-test-plan.template.json` - SSO validation input template (OIDC/OAuth/SAML)
 - `templates/separation-plan.template.json` - separation execution input template
 - `scripts/Invoke-TenantTransitionTemplate.ps1` - template loader for quick inspection
-- `../scripts/invoke-tenant-transition-project.ps1` - executable transition workflow script
+- `scripts/invoke-tenant-transition-project.ps1` - executable transition workflow script
 
 ## Consolidation Workflow Implementation
 

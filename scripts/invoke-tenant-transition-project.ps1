@@ -34,7 +34,7 @@
     During migration, create users in the target tenant when mapping has no target identity match.
 
 .PARAMETER DefaultPassword
-    Temporary password used when CreateMissingUsers is enabled.
+    Optional temporary password used when CreateMissingUsers is enabled.
 
 .PARAMETER UseManagedIdentity
     Use managed identity authentication instead of delegated interactive authentication.
@@ -85,7 +85,7 @@ param(
     [switch]$CreateMissingUsers,
 
     [Parameter()]
-    [string]$DefaultPassword,
+    [Security.SecureString]$DefaultPassword,
 
     [Parameter()]
     [switch]$UseManagedIdentity
@@ -93,6 +93,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$GraphDirectoryObjectsUriBase = 'https://graph.microsoft.com/v1.0/directoryObjects'
 
 function Write-Log {
     param([string]$Message, [string]$Level = 'INFO')
@@ -305,6 +306,18 @@ function New-SecurePassword {
         $chars.Add($all[$bytes[$i] % $all.Length])
     }
 
+    function Convert-SecureStringToPlainText {
+        param([Security.SecureString]$SecureValue)
+        if (-not $SecureValue) { return $null }
+        $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureValue)
+        try {
+            return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+        }
+        finally {
+            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+        }
+    }
+
     for ($i = $chars.Count - 1; $i -gt 0; $i--) {
         $swap = $bytes[$i + $Length] % ($i + 1)
         $tmp = $chars[$i]
@@ -365,7 +378,7 @@ function Invoke-MigrateIdentities {
                 continue
             }
 
-            $password = if ([string]::IsNullOrWhiteSpace($DefaultPassword)) { New-SecurePassword } else { $DefaultPassword }
+            $password = if ($DefaultPassword) { Convert-SecureStringToPlainText -SecureValue $DefaultPassword } else { New-SecurePassword }
             $mailAliasRaw = $upn.Split('@')[0]
             $mailAliasClean = ($mailAliasRaw -replace '[^a-zA-Z0-9\-_]', '')
             if ($mailAliasClean.Length -gt 40) {
@@ -423,7 +436,7 @@ function Invoke-MigrateIdentities {
             if ($PSCmdlet.ShouldProcess("$($targetGroup.DisplayName) -> $targetId", 'Assign group membership')) {
                 try {
                     New-MgGroupMemberByRef -GroupId $targetGroup.Id -BodyParameter @{
-                        '@odata.id' = "https://graph.microsoft.com/v1.0/directoryObjects/$targetId"
+                        '@odata.id' = "$GraphDirectoryObjectsUriBase/$targetId"
                     } | Out-Null
                     Write-Log "Assigned user $targetId to group '$($targetGroup.DisplayName)'." -Level 'SUCCESS'
                 }
