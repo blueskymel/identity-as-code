@@ -237,8 +237,8 @@ When companies merge, start by inventorying the current tenant and mapping what 
   }
    
   resource "azuread_group_member" {
-    group_object_id  = data.azuread_group.target_group.object_id
-    member_object_id = data.azuread_user.target_user.object_id
+   group_object_id  = data.azuread_group.target_group.id
+   member_object_id = data.azuread_user.target_user.id
   }
   ```
 5. **Test SSO applications** end to end, including login flows plus SAML, OAuth, and OpenID Connect integrations.

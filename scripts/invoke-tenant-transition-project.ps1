@@ -276,9 +276,59 @@ function Invoke-MapIdentities {
     Write-Log "Identity mapping exported to: $mappingPath" -Level 'SUCCESS'
 }
 
-function New-RandomPassword {
-    $guid = [guid]::NewGuid().ToString('N')
-    return "Tmp!$($guid.Substring(0,20))9aA"
+function New-SecurePassword {
+    param([int]$Length = 24)
+
+    if ($Length -lt 12) { $Length = 12 }
+
+    $lower = 'abcdefghijkmnopqrstuvwxyz'
+    $upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+    $digits = '23456789'
+    $special = '!@#$%^&*()-_=+[]{}'
+    $all = "$lower$upper$digits$special"
+
+    $bytes = New-Object byte[] ($Length * 2)
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+
+    $chars = [System.Collections.Generic.List[char]]::new()
+    $chars.Add($lower[$bytes[0] % $lower.Length])
+    $chars.Add($upper[$bytes[1] % $upper.Length])
+    $chars.Add($digits[$bytes[2] % $digits.Length])
+    $chars.Add($special[$bytes[3] % $special.Length])
+
+    for ($i = 4; $i -lt $Length; $i++) {
+        $chars.Add($all[$bytes[$i] % $all.Length])
+    }
+
+    for ($i = $chars.Count - 1; $i -gt 0; $i--) {
+        $swap = $bytes[$i + $Length] % ($i + 1)
+        $tmp = $chars[$i]
+        $chars[$i] = $chars[$swap]
+        $chars[$swap] = $tmp
+    }
+
+    return -join $chars
+}
+
+function Get-UniqueMailNickname {
+    param([string]$Preferred)
+
+    $base = if ([string]::IsNullOrWhiteSpace($Preferred)) {
+        "user$([guid]::NewGuid().ToString('N').Substring(0,8))"
+    }
+    else {
+        $Preferred
+    }
+
+    for ($i = 0; $i -lt 20; $i++) {
+        $candidate = if ($i -eq 0) { $base } else { "$base$i" }
+        $existing = Get-MgUser -Filter "mailNickname eq '$candidate'" -Top 1
+        if (-not $existing) {
+            return $candidate
+        }
+    }
+
+    return "user$([guid]::NewGuid().ToString('N').Substring(0,12))"
 }
 
 function Invoke-MigrateIdentities {
@@ -310,16 +360,17 @@ function Invoke-MigrateIdentities {
                 continue
             }
 
-            $password = if ([string]::IsNullOrWhiteSpace($DefaultPassword)) { New-RandomPassword } else { $DefaultPassword }
+            $password = if ([string]::IsNullOrWhiteSpace($DefaultPassword)) { New-SecurePassword } else { $DefaultPassword }
             $mailAliasRaw = $upn.Split('@')[0]
-            $mailAliasClean = ($mailAliasRaw -replace '[^a-zA-Z0-9\-_.]', '')
+            $mailAliasClean = ($mailAliasRaw -replace '[^a-zA-Z0-9\-_]', '')
             if ($mailAliasClean.Length -gt 40) {
                 $mailAliasClean = $mailAliasClean.Substring(0, 40)
             }
+            $mailNickname = Get-UniqueMailNickname -Preferred $mailAliasClean
             $newUserBody = @{
                 accountEnabled    = $true
                 displayName       = $row.SourceDisplayName
-                mailNickname      = if ([string]::IsNullOrWhiteSpace($mailAliasClean)) { "user$([guid]::NewGuid().ToString('N').Substring(0,8))" } else { $mailAliasClean }
+                mailNickname      = $mailNickname
                 userPrincipalName = $upn
                 passwordProfile   = @{
                     forceChangePasswordNextSignIn = $true
