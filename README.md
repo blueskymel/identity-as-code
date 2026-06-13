@@ -209,20 +209,34 @@ When companies merge, start by inventorying the current tenant and mapping what 
  
 1. **Review current tenant structure** to inventory users, groups, and applications.
   ```powershell
-  Get-MgUser
-  Get-MgGroup
-  Get-MgApplication
+  Get-MgUser -All | Export-Csv .\users.csv -NoTypeInformation
+  Get-MgGroup -All | Export-Csv .\groups.csv -NoTypeInformation
+  Get-MgApplication -All | Export-Csv .\applications.csv -NoTypeInformation
   ```
 2. **Export group memberships** so you know who currently has access.
   ```powershell
-  Get-MgGroupMember
+  Get-MgGroup -All | ForEach-Object {
+    $group = $_
+    Get-MgGroupMember -GroupId $group.Id -All |
+      Select-Object @{Name='GroupId';Expression={$group.Id}},
+                    @{Name='GroupDisplayName';Expression={$group.DisplayName}},
+                    Id
+  } | Export-Csv .\group-memberships.csv -NoTypeInformation
   ```
 3. **Map identities** where the same person may exist in both tenants. Preserve mailbox access, Teams access, SharePoint access, app permissions, and group memberships.
 4. **Migrate identities safely** by creating the user in the target tenant and reapplying equivalent access with Terraform or Graph API.
   ```hcl
+  data "azuread_group" "target_group" {
+    display_name = "grp-example"
+  }
+   
+  data "azuread_user" "target_user" {
+    user_principal_name = "user@contoso.com"
+  }
+   
   resource "azuread_group_member" {
-    group_object_id  = ...
-    member_object_id = ...
+    group_object_id  = data.azuread_group.target_group.object_id
+    member_object_id = data.azuread_user.target_user.object_id
   }
   ```
 5. **Test SSO applications** end to end, including login flows plus SAML, OAuth, and OpenID Connect integrations.
