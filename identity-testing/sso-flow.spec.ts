@@ -27,6 +27,14 @@ function samlStartUrl(application: SsoApplication): string | undefined {
   return process.env[`IDENTITY_SAML_START_URL_${toEnvKey(application.displayName)}`] ?? process.env.IDENTITY_SAML_START_URL;
 }
 
+function isMicrosoftLoginUrl(value: string): boolean {
+  try {
+    return new URL(value).hostname === 'login.microsoftonline.com';
+  } catch {
+    return false;
+  }
+}
+
 for (const application of plan.applications) {
   test(`${application.protocol} flow validates for ${application.displayName}`, async ({ page, request }) => {
     if (/openid connect|oauth/i.test(application.protocol)) {
@@ -41,17 +49,14 @@ for (const application of plan.applications) {
       expect(metadata.issuer).toBeTruthy();
       expect(metadata.authorization_endpoint).toBeTruthy();
       expect(metadata.token_endpoint).toBeTruthy();
-      return;
-    }
-
-    if (/saml/i.test(application.protocol)) {
+    } else if (/saml/i.test(application.protocol)) {
       const startUrl = samlStartUrl(application);
       test.skip(!startUrl, `Set IDENTITY_SAML_START_URL_${toEnvKey(application.displayName)} or IDENTITY_SAML_START_URL.`);
 
       const response = await page.goto(startUrl!, { waitUntil: 'domcontentloaded' });
       expect((response?.status() ?? 0) < 400).toBeTruthy();
 
-      if (page.url().includes('login.microsoftonline.com')) {
+      if (isMicrosoftLoginUrl(page.url())) {
         await expect(page.locator('input[name="loginfmt"]')).toBeVisible();
       }
 
@@ -59,10 +64,8 @@ for (const application of plan.applications) {
       if (expectedText) {
         await expect(page.getByText(expectedText, { exact: false })).toBeVisible();
       }
-
-      return;
+    } else {
+      throw new Error(`Unsupported SSO protocol '${application.protocol}' for ${application.displayName}.`);
     }
-
-    throw new Error(`Unsupported SSO protocol '${application.protocol}' for ${application.displayName}.`);
   });
 }

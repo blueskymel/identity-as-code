@@ -67,8 +67,7 @@ test('primary identity login succeeds', async ({ page }) => {
 
   if (expectedText) {
     await expect(page.getByText(expectedText, { exact: false })).toBeVisible();
-    return;
+  } else {
+    await expect(page.locator('input[name="passwd"]')).toHaveCount(0);
   }
-
-  await expect(page.locator('input[name="passwd"]')).toHaveCount(0);
 });
