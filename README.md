@@ -190,15 +190,57 @@ see [`pipelines/README.md`](pipelines/README.md).
 - The `Invoke-*Template.ps1` scripts in the top-level scaffolding folders load and echo template JSON for inspection; they are not the main deployment entrypoints used by the pipelines.
 
 ### Hybrid Delivery Model
-
+ 
 This repository is evolving toward a hybrid model:
-
+ 
 - **Terraform** for declarative identity/platform controls where provider support is strong.
 - **Graph PowerShell** for operational identity workflows (for example PIM operations and emergency tasks).
 - **Pipelines** enforce JSON + Terraform validation before deployment.
-
+ 
 ---
-
+ 
+## Identity Consolidation and Separation Projects
+ 
+This repository also fits **tenant-to-tenant transition work** during mergers, acquisitions, and divestitures.
+ 
+### Identity consolidation
+ 
+When companies merge, start by inventorying the current tenant and mapping what must move without breaking access:
+ 
+1. **Review current tenant structure** to inventory users, groups, and applications.
+  ```powershell
+  Get-MgUser
+  Get-MgGroup
+  Get-MgApplication
+  ```
+2. **Export group memberships** so you know who currently has access.
+  ```powershell
+  Get-MgGroupMember
+  ```
+3. **Map identities** where the same person may exist in both tenants. Preserve mailbox access, Teams access, SharePoint access, app permissions, and group memberships.
+4. **Migrate identities safely** by creating the user in the target tenant and reapplying equivalent access with Terraform or Graph API.
+  ```hcl
+  resource "azuread_group_member" {
+    group_object_id  = ...
+    member_object_id = ...
+  }
+  ```
+5. **Test SSO applications** end to end, including login flows plus SAML, OAuth, and OpenID Connect integrations.
+ 
+### Separation project
+ 
+When a business unit is sold or carved out, the goal is to move identities **out of the current tenant** without leaving residual access behind.
+ 
+- remove access from the source tenant
+- create the new tenant landing zone
+- migrate applications and enterprise app assignments
+- migrate permissions and group memberships
+- validate that security boundaries are clean and no access leaks remain
+ 
+These projects usually combine the repository's declarative controls with Graph-driven discovery and validation so access can be re-created consistently and reviewed before cutover.
+ 
+---
+ 
 ## Emergency Procedures
 
 ### Break-Glass Accounts
