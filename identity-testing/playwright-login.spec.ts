@@ -8,11 +8,19 @@ const expectedText = process.env.IDENTITY_POST_LOGIN_TEXT;
 const staySignedIn = (process.env.IDENTITY_STAY_SIGNED_IN ?? 'false').toLowerCase() === 'true';
 
 function missingVariables(): string[] {
-  return [
+  const required: Array<[string, string | undefined]> = [
     ['IDENTITY_LOGIN_URL', loginUrl],
     ['IDENTITY_TEST_USERNAME', username],
     ['IDENTITY_TEST_PASSWORD', password]
-  ].filter(([, value]) => !value).map(([name]) => name);
+  ];
+
+  return required.reduce<string[]>((missing, [name, value]) => {
+    if (!value) {
+      missing.push(name);
+    }
+
+    return missing;
+  }, []);
 }
 
 async function clickFirstVisible(page: Page, selectors: string[]): Promise<boolean> {

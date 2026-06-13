@@ -10,14 +10,22 @@ const allowedText = process.env.IDENTITY_RBAC_ALLOWED_TEXT;
 const deniedText = process.env.IDENTITY_RBAC_DENIED_TEXT ?? 'You do not have access';
 
 function missingVariables(): string[] {
-  return [
+  const required: Array<[string, string | undefined]> = [
     ['IDENTITY_LOGIN_URL', loginUrl],
     ['IDENTITY_RBAC_PROTECTED_URL', protectedUrl],
     ['IDENTITY_ADMIN_USERNAME', adminUser],
     ['IDENTITY_ADMIN_PASSWORD', adminPassword],
     ['IDENTITY_LIMITED_USERNAME', limitedUser],
     ['IDENTITY_LIMITED_PASSWORD', limitedPassword]
-  ].filter(([, value]) => !value).map(([name]) => name);
+  ];
+
+  return required.reduce<string[]>((missing, [name, value]) => {
+    if (!value) {
+      missing.push(name);
+    }
+
+    return missing;
+  }, []);
 }
 
 async function clickFirstVisible(page: Page, selectors: string[]): Promise<void> {
