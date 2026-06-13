@@ -254,15 +254,20 @@ function Invoke-MapIdentities {
             $matchType = 'userPrincipalName'
         }
 
+        $targetId = if ($match) { $match.Id } else { $null }
+        $targetDisplayName = if ($match) { $match.DisplayName } else { $null }
+        $targetUserPrincipalName = if ($match) { $match.UserPrincipalName } else { $null }
+        $targetMail = if ($match) { $match.Mail } else { $null }
+
         [pscustomobject]@{
             SourceId                  = $source.Id
             SourceDisplayName         = $source.DisplayName
             SourceUserPrincipalName   = $source.UserPrincipalName
             SourceMail                = $source.Mail
-            TargetId                  = $match.Id
-            TargetDisplayName         = $match.DisplayName
-            TargetUserPrincipalName   = $match.UserPrincipalName
-            TargetMail                = $match.Mail
+            TargetId                  = $targetId
+            TargetDisplayName         = $targetDisplayName
+            TargetUserPrincipalName   = $targetUserPrincipalName
+            TargetMail                = $targetMail
             MatchType                 = $matchType
             PreserveMailbox           = $true
             PreserveTeams             = $true
@@ -314,7 +319,7 @@ function Get-UniqueMailNickname {
     param([string]$Preferred)
 
     $base = if ([string]::IsNullOrWhiteSpace($Preferred)) {
-        "user$([guid]::NewGuid().ToString('N').Substring(0,8))"
+        "migrated$([guid]::NewGuid().ToString('N').Substring(0,8))"
     }
     else {
         $Preferred
@@ -328,7 +333,7 @@ function Get-UniqueMailNickname {
         }
     }
 
-    return "user$([guid]::NewGuid().ToString('N').Substring(0,12))"
+    return "migrated$([guid]::NewGuid().ToString('N').Substring(0,12))"
 }
 
 function Invoke-MigrateIdentities {

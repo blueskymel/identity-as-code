@@ -4,13 +4,13 @@
       "displayName": "Contoso OIDC App",
       "protocol": "OpenID Connect",
       "servicePrincipalAppId": "00000000-0000-0000-0000-000000000000",
-      "oidcDiscoveryUrl": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration"
+      "oidcDiscoveryUrl": "https://login.microsoftonline.com/{tenantId}/v2.0/.well-known/openid-configuration"
     },
     {
       "displayName": "Contoso OAuth API",
       "protocol": "OAuth",
       "servicePrincipalAppId": "11111111-1111-1111-1111-111111111111",
-      "oidcDiscoveryUrl": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration"
+      "oidcDiscoveryUrl": "https://login.microsoftonline.com/{tenantId}/v2.0/.well-known/openid-configuration"
     },
     {
       "displayName": "Contoso SAML App",

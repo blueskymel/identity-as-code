@@ -237,7 +237,7 @@ When companies merge, start by inventorying the current tenant and mapping what 
   }
    
   resource "azuread_group_member" {
-   group_object_id  = data.azuread_group.target_group.id
+   group_id         = data.azuread_group.target_group.id
    member_object_id = data.azuread_user.target_user.id
   }
   ```
