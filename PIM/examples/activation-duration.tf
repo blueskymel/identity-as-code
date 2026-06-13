@@ -13,10 +13,10 @@ locals {
   activation_duration_rule_payload = jsonencode({
     rules = [
       {
-        "@odata.type"         = "#microsoft.graph.unifiedRoleManagementPolicyExpirationRule"
-        id                    = "Expiration_EndUser_Assignment"
-        isExpirationRequired  = true
-        maximumDuration       = var.activation_duration_maximum_duration
+        "@odata.type"        = "#microsoft.graph.unifiedRoleManagementPolicyExpirationRule"
+        id                   = "Expiration_EndUser_Assignment"
+        isExpirationRequired = true
+        maximumDuration      = var.activation_duration_maximum_duration
       }
     ]
   })
