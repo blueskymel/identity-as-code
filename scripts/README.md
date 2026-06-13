@@ -10,6 +10,7 @@ This directory contains PowerShell deployment and validation scripts for managin
 | `deploy-dynamic-groups.ps1` | Deploy dynamic and assigned group definitions |
 | `deploy-administrative-units.ps1` | Deploy Administrative Units and scoped role assignments |
 | `deploy-role-assignments.ps1` | Deploy tenant-wide and scoped role assignments (including PIM) |
+| `invoke-tenant-transition-project.ps1` | Run identity consolidation/separation project actions (inventory, mapping, migration, SSO checks, separation) |
 | `validate.ps1` | Validate all JSON template files before deployment |
 
 ## Prerequisites
@@ -37,6 +38,9 @@ All scripts require:
 | `AdministrativeUnit.ReadWrite.All` | Application | deploy-administrative-units.ps1 |
 | `RoleManagement.ReadWrite.Directory` | Application | deploy-role-assignments.ps1 |
 | `PrivilegedEligibilitySchedule.ReadWrite.AzureADGroup` | Application | deploy-role-assignments.ps1 |
+| `User.ReadWrite.All` | Delegated/Application | invoke-tenant-transition-project.ps1 |
+| `Group.ReadWrite.All` | Delegated/Application | invoke-tenant-transition-project.ps1 |
+| `Application.ReadWrite.All` | Delegated/Application | invoke-tenant-transition-project.ps1 |
 
 > **Important:** Use **Managed Identity** for automated pipeline runs. Never store credentials in the pipeline.
 
@@ -54,6 +58,7 @@ They do not currently prompt for interactive sign-in.
 For local workstation work, use:
 
 - `pwsh scripts/validate.ps1` to validate repository JSON
+- `pwsh scripts/invoke-tenant-transition-project.ps1` for merger/divestiture transition operations
 - the `Invoke-*Template.ps1` loader scripts in the top-level scaffolding folders to inspect baseline templates
 - a managed-identity-capable host if you want to execute the deploy scripts without changing them
 
