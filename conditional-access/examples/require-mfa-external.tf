@@ -1,16 +1,16 @@
-variable "require_mfa_external_display_name" {
+variable "external_mfa_display_name" {
   description = "Display name for the Conditional Access policy that requires MFA for external users."
   type        = string
   default     = "CA-Require-MFA-External-Users"
 }
 
-variable "require_mfa_external_state" {
+variable "external_mfa_state" {
   description = "State for the external user MFA Conditional Access policy."
   type        = string
   default     = "enabledForReportingButNotEnforced"
 }
 
-variable "require_mfa_external_guest_or_external_user_types" {
+variable "external_mfa_guest_or_external_user_types" {
   description = "External identity types in scope for the policy."
   type        = list(string)
   default = [
@@ -27,8 +27,8 @@ data "azuread_group" "require_mfa_external_break_glass" {
 }
 
 resource "azuread_conditional_access_policy" "require_mfa_external" {
-  display_name = var.require_mfa_external_display_name
-  state        = var.require_mfa_external_state
+  display_name = var.external_mfa_display_name
+  state        = var.external_mfa_state
 
   conditions {
     client_app_types = ["all"]
@@ -41,7 +41,7 @@ resource "azuread_conditional_access_policy" "require_mfa_external" {
       excluded_groups = [data.azuread_group.require_mfa_external_break_glass.object_id]
 
       included_guests_or_external_users {
-        guest_or_external_user_types = var.require_mfa_external_guest_or_external_user_types
+        guest_or_external_user_types = var.external_mfa_guest_or_external_user_types
 
         external_tenants {
           membership_kind = "all"

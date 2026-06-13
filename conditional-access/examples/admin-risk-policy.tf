@@ -1,16 +1,16 @@
-variable "admin_risk_policy_display_name" {
+variable "admin_risk_display_name" {
   description = "Display name for the Conditional Access policy that targets privileged roles when sign-in risk is high."
   type        = string
   default     = "CA-Block-High-Risk-Admins"
 }
 
-variable "admin_risk_policy_state" {
+variable "admin_risk_state" {
   description = "State for the privileged role high-risk Conditional Access policy."
   type        = string
   default     = "enabledForReportingButNotEnforced"
 }
 
-variable "admin_risk_policy_included_role_ids" {
+variable "admin_risk_included_role_ids" {
   description = "Built-in directory role template IDs included in the policy scope."
   type        = list(string)
   default = [
@@ -34,8 +34,8 @@ data "azuread_group" "admin_risk_policy_break_glass" {
 }
 
 resource "azuread_conditional_access_policy" "admin_risk_policy" {
-  display_name = var.admin_risk_policy_display_name
-  state        = var.admin_risk_policy_state
+  display_name = var.admin_risk_display_name
+  state        = var.admin_risk_state
 
   conditions {
     client_app_types    = ["all"]
@@ -46,7 +46,7 @@ resource "azuread_conditional_access_policy" "admin_risk_policy" {
     }
 
     users {
-      included_roles  = var.admin_risk_policy_included_role_ids
+      included_roles  = var.admin_risk_included_role_ids
       excluded_groups = [data.azuread_group.admin_risk_policy_break_glass.object_id]
     }
   }
