@@ -8,6 +8,9 @@
 ## Overview
 
 This repository implements a full **Identity-as-Code** pattern for Microsoft Entra ID. Every security control, group, and role assignment is defined in JSON, deployed by an automated pipeline, and can be rolled back within minutes.
+```
+
+---
 
 ### What's in this repo?
 
@@ -20,6 +23,7 @@ This repository implements a full **Identity-as-Code** pattern for Microsoft Ent
 | [`terraform/`](terraform/README.md) | Terraform foundation for declarative identity and platform controls |
 | [`scripts/`](scripts/README.md) | PowerShell deployment and validation scripts |
 | [`rollback/`](rollback/README.md) | Rollback scripts and instructions |
+ | [`hybrid-identity-lab/`](hybrid-identity-lab/README.md) | Hybrid identity patterns: Password Hash Sync, Pass-Through Auth, and ADFS Federation |
 | [`ConditionalAccess/`](ConditionalAccess/README.md) | Baseline template + script scaffolding for Conditional Access automation |
 | [`AppRegistrations/`](AppRegistrations/README.md) | Baseline app registration template and loader script |
 | [`EnterpriseApps/`](EnterpriseApps/README.md) | Baseline enterprise app assignment template and loader script |
@@ -29,13 +33,7 @@ This repository implements a full **Identity-as-Code** pattern for Microsoft Ent
 | [`tenant-transitions/`](tenant-transitions/README.md) | Identity consolidation/separation templates and transition workflow guidance |
 | [`identity-testing/`](identity-testing/) | Playwright-based sign-in, SSO, RBAC, and MFA validation assets |
 | [`msol-tenant-settings/`](msol-tenant-settings/README.md) | Legacy MSOnline tenant/domain/federation settings command examples |
-| [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD pipelines |
-| [`pipelines/`](pipelines/) | Azure DevOps pipeline YAML |
-
----
-
 ## Security Architecture
-
 This repo follows the **Microsoft Zero Trust** and **NIST SP 800-207** principles:
 
 ```
@@ -139,6 +137,9 @@ pwsh scripts/deploy-role-assignments.ps1 -Environment dev -WhatIf
 ## Pipeline
 
 ### GitHub Actions
+```
+
+---
 
 Three workflows are provided:
 
@@ -162,12 +163,6 @@ Three workflows are provided:
 
 Use [`pipelines/github-actions.secrets.example.env`](pipelines/github-actions.secrets.example.env) as a placeholder checklist for the values you still need to fill in.
 
-### Azure DevOps
-
-An equivalent pipeline is available at [`pipelines/azure-devops.yml`](pipelines/azure-devops.yml).
-The current YAML expects:
-
-- Azure DevOps environments named `dev`, `staging`, and `prod`
 - service connections named `identity-as-code-dev`, `identity-as-code-staging`, and `identity-as-code-prod`
 - variable groups named `identity-as-code-dev`, `identity-as-code-staging`, and `identity-as-code-prod`
 
