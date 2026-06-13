@@ -27,6 +27,7 @@ This repository implements a full **Identity-as-Code** pattern for Microsoft Ent
 | [`AccessReviews/`](AccessReviews/README.md) | Baseline access review template and loader script |
 | [`LifecycleWorkflows/`](LifecycleWorkflows/README.md) | Baseline lifecycle workflow template and loader script |
 | [`tenant-transitions/`](tenant-transitions/README.md) | Identity consolidation/separation templates and transition workflow guidance |
+| [`identity-testing/`](identity-testing/) | Playwright-based sign-in, SSO, RBAC, and MFA validation assets |
 | [`msol-tenant-settings/`](msol-tenant-settings/README.md) | Legacy MSOnline tenant/domain/federation settings command examples |
 | [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD pipelines |
 | [`pipelines/`](pipelines/) | Azure DevOps pipeline YAML |
